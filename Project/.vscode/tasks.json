@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "make build && make run",
             "windows": {
-                "command": "MSBuild.exe .\\TDT4230_Project.sln; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }"
+                "command": "MSBuild.exe .\\TDT4230_Project.sln -consoleloggerparameters:ErrorsOnly; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }"
             },
             "options": {
                 "cwd": "build"
