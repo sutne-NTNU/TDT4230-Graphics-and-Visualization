@@ -1,0 +1,15 @@
+BasedOnStyle: WebKit
+ColumnLimit: 0
+MaxEmptyLinesToKeep: 3
+BreakBeforeBraces: Allman # All braces on new line
+PointerAlignment: Right
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AlignConsecutiveAssignments: Consecutive
+AlignTrailingComments: true
+AlignAfterOpenBracket: true
+AlignEscapedNewlines: Left
+AlignOperands: AlignAfterOperator
+IndentCaseLabels: true
+NamespaceIndentation: All

@@ -1,0 +1,104 @@
+// To use these tasks make sure the "Task Runner" extension is enabled in VSCode
+// VScode must restart for changes to apply
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build and Run",
+            "type": "shell",
+            "command": "make build && make run",
+            "windows": {
+                "command": "MSBuild.exe .\\TDT4230_Project.sln; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "CMake",
+            "type": "shell",
+            "command": "cmake ..",
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "make build",
+            "windows": {
+                "command": "MSBuild.exe .\\TDT4230_Project.sln"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "make run",
+            "windows": {
+                "command": "clear | Debug\\TDT4230_Project.exe"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Render Report",
+            "type": "shell",
+            "command": "make",
+            "windows": {
+                "command": ""
+            },
+            "options": {
+                "cwd": "report"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": false,
+                "focus": false,
+                "showReuseMessage": false,
+                "reveal": "never",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+    ]
+}

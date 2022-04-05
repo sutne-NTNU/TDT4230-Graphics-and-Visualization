@@ -1,0 +1,63 @@
+[submodule "01 - Lighting/lib/glad"]
+	path = 01 - Lighting/lib/glad
+	url = https://github.com/Dav1dde/glad.git
+[submodule "01 - Lighting/lib/glfw"]
+	path = 01 - Lighting/lib/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "01 - Lighting/lib/glm"]
+	path = 01 - Lighting/lib/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "01 - Lighting/lib/stb"]
+	path = 01 - Lighting/lib/stb
+	url = https://github.com/nothings/stb.git
+[submodule "01 - Lighting/lib/arrrgh"]
+	path = 01 - Lighting/lib/arrrgh
+	url = https://github.com/ElectricToy/arrrgh.git
+[submodule "01 - Lighting/lib/SFML"]
+	path = 01 - Lighting/lib/SFML
+	url = https://github.com/SFML/SFML.git
+[submodule "01 - Lighting/lib/lodepng"]
+	path = 01 - Lighting/lib/lodepng
+	url = https://github.com/lvandeve/lodepng
+[submodule "01 - Lighting/lib/fmt"]
+	path = 01 - Lighting/lib/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "02 - Texturing/lib/glad"]
+	path = 02 - Texturing/lib/glad
+	url = https://github.com/Dav1dde/glad.git
+[submodule "02 - Texturing/lib/glfw"]
+	path = 02 - Texturing/lib/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "02 - Texturing/lib/glm"]
+	path = 02 - Texturing/lib/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "02 - Texturing/lib/stb"]
+	path = 02 - Texturing/lib/stb
+	url = https://github.com/nothings/stb.git
+[submodule "02 - Texturing/lib/arrrgh"]
+	path = 02 - Texturing/lib/arrrgh
+	url = https://github.com/ElectricToy/arrrgh.git
+[submodule "02 - Texturing/lib/SFML"]
+	path = 02 - Texturing/lib/SFML
+	url = https://github.com/SFML/SFML.git
+[submodule "02 - Texturing/lib/lodepng"]
+	path = 02 - Texturing/lib/lodepng
+	url = https://github.com/lvandeve/lodepng
+[submodule "02 - Texturing/lib/fmt"]
+	path = 02 - Texturing/lib/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Project/lib/glad"]
+	path = Project/lib/glad
+	url = https://github.com/Dav1dde/glad.git
+[submodule "Project/lib/glfw"]
+	path = Project/lib/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "Project/lib/glm"]
+	path = Project/lib/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "Project/lib/stb"]
+	path = Project/lib/stb
+	url = https://github.com/nothings/stb.git
+[submodule "Project/lib/cgltf"]
+	path = Project/lib/cgltf
+	url = https://github.com/jkuhlmann/cgltf.git

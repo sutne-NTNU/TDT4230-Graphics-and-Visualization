@@ -1,0 +1,102 @@
+// To use these tasks make sure the "Task Runner" extension is enabled in VSCode
+// VScode must restart for changes to apply
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Debug Project",
+            "type": "shell",
+            "windows": {
+                "command": "MSBuild.exe .\\glowbox.sln; if ($LASTEXITCODE -eq 0) { clear | Debug\\glowbox.exe }"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Run Project With Music",
+            "type": "shell",
+            "windows": {
+                "command": "Debug\\glowbox.exe --enable-music"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": false,
+                "focus": false,
+                "showReuseMessage": false,
+                "reveal": "never",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Autoplay",
+            "type": "shell",
+            "windows": {
+                "command": "Debug\\glowbox.exe --enable-music --autoplay"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": false,
+                "focus": false,
+                "showReuseMessage": false,
+                "reveal": "never",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "CMake",
+            "type": "shell",
+            "windows": {
+                "command": "cmake .."
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "windows": {
+                "command": "MSBuild.exe .\\glowbox.sln"
+            },
+            "options": {
+                "cwd": "build"
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+    ]
+}

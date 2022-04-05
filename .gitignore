@@ -1,0 +1,11 @@
+# Extensions
+**.DS_Store
+
+# Folders
+**/.vscode/*
+
+# Files
+
+
+# Special Inclusion
+!*/.vscode/tasks.json
