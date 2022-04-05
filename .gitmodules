@@ -1,6 +1,7 @@
 [submodule "01 - Lighting/lib/glad"]
 	path = 01 - Lighting/lib/glad
 	url = https://github.com/Dav1dde/glad.git
+    branch = c
 [submodule "01 - Lighting/lib/glfw"]
 	path = 01 - Lighting/lib/glfw
 	url = https://github.com/glfw/glfw.git
@@ -25,6 +26,7 @@
 [submodule "02 - Texturing/lib/glad"]
 	path = 02 - Texturing/lib/glad
 	url = https://github.com/Dav1dde/glad.git
+    branch = c
 [submodule "02 - Texturing/lib/glfw"]
 	path = 02 - Texturing/lib/glfw
 	url = https://github.com/glfw/glfw.git
@@ -49,6 +51,7 @@
 [submodule "Project/lib/glad"]
 	path = Project/lib/glad
 	url = https://github.com/Dav1dde/glad.git
+    branch = c
 [submodule "Project/lib/glfw"]
 	path = Project/lib/glfw
 	url = https://github.com/glfw/glfw.git
