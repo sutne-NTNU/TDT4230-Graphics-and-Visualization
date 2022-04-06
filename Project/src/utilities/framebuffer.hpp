@@ -1,19 +1,23 @@
 #pragma once
 
+#include <string>
 
-
-struct FrameBuffer
+struct Framebuffer
 {
     unsigned int ID;
-    unsigned int colorBufferID;
-    unsigned int depthBufferID;
+    unsigned int textureID;
+    unsigned int renderID;
+    unsigned int width;
+    unsigned int height;
 };
 
 
 
 namespace FRAMEBUFFER
 {
-    FrameBuffer initFrameBuffer();
-    void bindFramebuffer(unsigned int framebuffer);
+    Framebuffer initFramebuffer(unsigned int width, unsigned int height);
+    Framebuffer initCubemapFramebuffer(unsigned int size);
+    void bindFramebuffer(Framebuffer framebuffer);
     void unbindFramebuffer();
+    void checkFramebufferStatus(std::string errorMessage);
 }

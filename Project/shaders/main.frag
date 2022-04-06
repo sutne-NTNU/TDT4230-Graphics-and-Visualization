@@ -10,6 +10,9 @@
 #define REFLECTION 1 // Render scene to what will become a cubemap
 #define RENDER 2     // Render entire scene
 
+#define DEBUG_1 10
+#define DEBUG_2 11
+
 // Definitions
 struct Camera
 {
@@ -39,8 +42,9 @@ in layout(location = 2) vec3 in_normal;
 in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
-uniform highp int TYPE;
-uniform highp int PASS;
+in layout(location = 10) flat int TYPE;
+in layout(location = 11) flat int PASS;
+
 uniform highp int debug_pass_one;
 uniform highp int debug_pass_two;
 
@@ -54,18 +58,20 @@ uniform layout(binding = 1) sampler2D texture_map;
 uniform layout(binding = 2) sampler2D normal_map;
 uniform layout(binding = 3) sampler2D roughness_map;
 
+uniform layout(binding = 10) samplerCube reflection_cubemap;
+
 uniform sampler2D debugTexture;
 
 // Out
 out vec4 fragment_color;
 // Out to textures
-out layout(location = 0) vec3 refraction_backsides;
-out layout(location = 1) vec3 cubemap_right;
-out layout(location = 2) vec3 cubemap_left;
-out layout(location = 3) vec3 cubemap_top;
-out layout(location = 4) vec3 cubemap_bottom;
-out layout(location = 5) vec3 cubemap_front;
-out layout(location = 6) vec3 cubemap_back;
+// out layout(location = 0) vec3 refraction_backsides;
+// out layout(location = 1) vec3 cubemap_right;
+// out layout(location = 2) vec3 cubemap_left;
+// out layout(location = 3) vec3 cubemap_top;
+// out layout(location = 4) vec3 cubemap_bottom;
+// out layout(location = 5) vec3 cubemap_front;
+// out layout(location = 6) vec3 cubemap_back;
 
 
 
@@ -156,12 +162,12 @@ vec3 apply_fresnel(vec3 reflection, vec3 refraction, vec3 normal)
 
 void main()
 {
-    if (debug_pass_one)
+    if (PASS == DEBUG_1)
     {
         fragment_color = vec4(0, 1, 0.05, 1);
         return;
     }
-    else if (debug_pass_two)
+    else if (PASS == DEBUG_2)
     {
         fragment_color = texture(debugTexture, in_texture_coordinates);
         return;
@@ -185,13 +191,12 @@ void main()
         {
             fragment_color = vec4(0, 0, 0, 1);
         }
-        refraction_backsides = fragment_color.rgb;
         return;
     }
 
 
 
-    if (PASS == RENDER || PASS == REFLECTION)
+    if (PASS == REFLECTION)
     {
         // Optimzation could be to not render as detailed in the reflection pass
         if (TYPE == SKYBOX)
@@ -215,9 +220,6 @@ void main()
             normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
             roughness = texture(roughness_map, in_texture_coordinates).x;
 
-            // fragment_color = vec4(normal, 1);
-            // return;
-
             if (appearance.use_texture_map)
             {
                 color = texture(texture_map, in_texture_coordinates).rgb;
@@ -235,6 +237,58 @@ void main()
         else if (appearance.reflectivity > 0)
         {
             fragment_color = vec4(get_reflection(normal), 1);
+        }
+        else
+        {
+            fragment_color = vec4(get_surface_color(normal, color, roughness), 1);
+        }
+    }
+
+
+
+    if (PASS == RENDER)
+    {
+        // Optimzation could be to not render as detailed in the reflection pass
+        if (TYPE == SKYBOX)
+        {
+            fragment_color = texture(skybox, in_fragment_position);
+            return;
+        }
+
+
+
+        // For regular geometry
+        vec3 normal     = normalize(in_normal);
+        vec3 color      = appearance.color;
+        float roughness = appearance.roughness;
+
+
+
+        // Textured Geometry
+        if (TYPE == GEOMETRY_TEXTURED)
+        {
+            normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
+            roughness = texture(roughness_map, in_texture_coordinates).x;
+
+            if (appearance.use_texture_map)
+            {
+                color = texture(texture_map, in_texture_coordinates).rgb;
+            }
+        }
+
+
+
+        if (appearance.opacity > 0) // light passes through the object
+        {
+            vec3 reflection = get_reflection(normal);
+            vec3 refraction = get_refraction(normal);
+            fragment_color  = vec4(apply_fresnel(reflection, refraction, normal), 1);
+        }
+        else if (appearance.reflectivity > 0)
+        {
+            vec3 I         = normalize(in_fragment_position - camera.position);
+            vec3 R         = reflect(I, normal);
+            fragment_color = vec4(texture(reflection_cubemap, R).rgb, 1);
         }
         else
         {

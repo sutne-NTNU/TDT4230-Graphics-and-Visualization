@@ -1,3 +1,5 @@
+#include "scene.hpp"
+
 #include <chrono>
 #include <ctime>
 #include <iostream>
@@ -12,14 +14,12 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/vec3.hpp>
 
-
 #include "classes/camera.hpp"
 #include "classes/framebufferHandler.hpp"
 #include "classes/keyboard.hpp"
 #include "classes/sceneNode.hpp"
 #include "classes/shader.hpp"
 #include "classes/skyboxHandler.hpp"
-#include "logic.hpp"
 #include "options.hpp"
 #include "structs/appearance_struct.hpp"
 #include "structs/mesh_struct.hpp"
@@ -120,7 +120,7 @@ void initSceneGraph()
     shapes              = new SceneNode();
     SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), MATTE_RED);
     SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), GLASS);
-    SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), GLASS);
+    SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), CHROME);
     SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), GLASS);
     SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), CHROME);
 
@@ -184,7 +184,7 @@ void updateState(GLFWwindow *window, double deltaTime)
 void renderFrame(GLFWwindow *window)
 {
     // renderRefractionStep(window);
-    // renderReflectionStep(window);
+    renderReflectionStep(window);
     renderFinal(window);
     // renderContentsOf(framebuffers->refractionFramebuffer);
 }
@@ -279,7 +279,7 @@ void renderRefractionStep(GLFWwindow *window)
 
     glEnable(GL_TEXTURE_2D);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, framebuffers->refractionFramebuffer.colorBufferID);
+    glBindTexture(GL_TEXTURE_2D, framebuffers->refractionFramebuffer.textureID);
 
     // Calculate ViewProjection Matrix
     glm::mat4 projection = UTILS::getPerspectiveMatrix(45);
@@ -308,33 +308,53 @@ void renderRefractionStep(GLFWwindow *window)
  */
 void renderReflectionStep(GLFWwindow *window)
 {
+    std::vector<glm::vec3> viewDirections = {
+        glm::vec3(1, 0, 0),  // right
+        glm::vec3(-1, 0, 0), // left
+        glm::vec3(0, 1, 0),  // top
+        glm::vec3(0, -1, 0), // bottom
+        glm::vec3(0, 0, 1),  // front
+        glm::vec3(0, 0, -1)  // back
+    };
+    // Use up vectors to rotate faces correctly
+    std::vector<glm::vec3> upDirections = {
+        glm::vec3(0, -1, 0),
+        glm::vec3(0, -1, 0),
+        glm::vec3(0, 0, 1),
+        glm::vec3(0, 0, -1),
+        glm::vec3(0, -1, 0),
+        glm::vec3(0, -1, 0)
+    };
 
-    std::vector<glm::vec3>
-        viewDirections = {
-            glm::vec3(1, 0, 0),  // right
-            glm::vec3(-1, 0, 0), // left
-            glm::vec3(0, 1, 0),  // top
-            glm::vec3(0, -1, 0), // bottom
-            glm::vec3(0, 0, 1),  // front
-            glm::vec3(0, 0, -1)  // back
-        };
-    SceneNode *node = bust;
+    framebuffers->activateCubemapBuffer();
 
     glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
-    for (int j = 0; j < 6; j++)
+    for (unsigned int side = 0; side < 6; side++)
     {
-        glm::mat4 view = UTILS::getViewMatrix(node->position, viewDirections[j]);
+        framebuffers->selectCubemapTarget(side);
+        glm::mat4 view = UTILS::getViewMatrix(root->position, viewDirections[side], upDirections[side]);
 
         skybox->updateVP(view, projection);
-        updateNodeTransformations(node, glm::mat4(1), projection * view);
 
-        framebuffers->activateCubemapBuffer(j);
-        shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION + j);
+        // Render skybox
+        shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
+        shader->setUniform(UNIFORMS::MVP, skybox->VP);
+        glDepthMask(GL_FALSE);
+        glBindVertexArray(skybox->vaoID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getTextureID());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+
+        updateNodeTransformations(root, glm::mat4(1), projection * view);
+
+        shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
         shader->setUniform("camera.position", camera->getPosition());
         shader->setUniform("sun.color", skybox->getSunColor());
         shader->setUniform("sun.direction", skybox->getSunDirection());
+
         renderNode(root);
     }
+    glBindTextureUnit(BINDINGS::reflection_cubemap, framebuffers->cubemapFrameBuffer.textureID);
 }
 
 
@@ -353,12 +373,15 @@ void renderFinal(GLFWwindow *window)
     updateNodeTransformations(root, glm::mat4(1), projection * view);
 
     // Activate correct framebuffer
-    // framebuffers->activateScreenBuffer();
+    framebuffers->activateScreenBuffer();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
 
-    shader->setUniform("PASS", UNIFORM_FLAGS::RENDER);
+    shader->setUniform("debug_pass_one", false);
+    shader->setUniform("debug_pass_two", false);
 
     // Render skybox
-    shader->setUniform("TYPE", UNIFORM_FLAGS::SKYBOX);
+    shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
     shader->setUniform(UNIFORMS::MVP, skybox->VP);
     glDepthMask(GL_FALSE);
     glBindVertexArray(skybox->vaoID);
@@ -375,7 +398,7 @@ void renderFinal(GLFWwindow *window)
 
 
 // Creates a quad and renders the contents of the frambuffer to it
-void renderContentsOf(FrameBuffer framebuffer)
+void renderContentsOf(Framebuffer framebuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
     glDisable(GL_DEPTH_TEST);
@@ -426,6 +449,6 @@ void renderContentsOf(FrameBuffer framebuffer)
     shader->setUniform("debug_pass_two", true);
 
     glBindVertexArray(vaoID);
-    glBindTexture(GL_TEXTURE_2D, framebuffer.colorBufferID);
+    glBindTexture(GL_TEXTURE_2D, framebuffer.textureID);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }

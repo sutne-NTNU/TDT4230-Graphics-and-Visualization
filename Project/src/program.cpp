@@ -6,7 +6,7 @@
 
 #include <glad/glad.h>
 
-#include "logic.hpp"
+#include "scene.hpp"
 #include "options.hpp"
 
 
@@ -64,12 +64,12 @@ void runProgram(GLFWwindow *window)
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        // Update state of entire scene (positions, rotations, cameramovement etc.)
         updateState(window, getSecondsSinceLastFrame());
+        // Perform a full render pass on the scene
         renderFrame(window);
 
-        // Handle other events
+        // Handle events (keyboard/mouse input, window resizing etc.)
         glfwPollEvents();
 
         // Flip buffers

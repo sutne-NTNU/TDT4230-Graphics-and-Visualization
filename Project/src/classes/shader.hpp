@@ -47,6 +47,8 @@ namespace BINDINGS
     const int texture_map   = 1;
     const int normal_map    = 2;
     const int roughness_map = 3;
+
+    const int reflection_cubemap = 10;
 }
 
 

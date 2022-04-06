@@ -18,4 +18,4 @@ void renderReflectionStep(GLFWwindow *window);
 void renderFinal(GLFWwindow *window);
 void renderNode(SceneNode *node);
 
-void renderContentsOf(FrameBuffer framebuffer);
+void renderContentsOf(Framebuffer framebuffer);
