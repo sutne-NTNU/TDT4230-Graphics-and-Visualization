@@ -11,7 +11,6 @@
 
 
 
-
 /** Return nanoseconds since the given time point */
 long nanoSince(std::chrono::steady_clock::time_point time)
 {
@@ -55,8 +54,7 @@ void runProgram(GLFWwindow *window)
 
     // Set default colour after clearing the colour buffer
     glClearColor(0.6f, 0.0f, 0.6f, 1.0f);
-
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+    // Place cursor in 0, 0  so deltaX and deltaY are 0 first frame
     glfwSetCursorPos(window, 0, 0);
 
     if (OPTIONS::verbose) printf("Initializing Scene\n");
@@ -65,6 +63,9 @@ void runProgram(GLFWwindow *window)
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
     {
+        // keep cursor hidden and active
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
         // Update state of entire scene (positions, rotations, cameramovement etc.)
         updateState(window, getSecondsSinceLastFrame());
         // Perform a full render pass on the scene

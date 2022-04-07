@@ -9,11 +9,6 @@
 class Camera
 {
 private:
-    // View Vectors
-    glm::vec3 front;
-    glm::vec3 right;
-    glm::vec3 up;
-
     // Camera settings
     GLfloat MovementSpeed;
     GLfloat MouseSensitivity;
@@ -23,7 +18,12 @@ private:
     GLfloat CursorYPos = 0.0f;
 
 public:
-    // camera Attributes
+    // View Vectors
+    glm::vec3 front;
+    glm::vec3 right;
+    glm::vec3 up;
+
+    // Camera Attributes
     glm::vec3 position;
     // Rotations
     GLfloat pitch;
@@ -41,21 +41,6 @@ public:
         resetSensitivity();
     }
 
-    glm::vec3 getPosition()
-    {
-        return position;
-    }
-
-    glm::vec3 getVectorIntoCamera()
-    {
-        return -front;
-    }
-
-    // returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 getViewMatrix()
-    {
-        return UTILS::getViewMatrix(position, front, up);
-    }
 
     /** Handle cursor position from a callback mechanism */
     void handleCursorPosition(float newX, float newY)

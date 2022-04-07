@@ -88,6 +88,9 @@ public:
         // Load skybox faces to the texture
         for (unsigned int i = 0; i < faces.size(); i++)
         {
+            auto idx = faces[i].rfind(".");
+            assert(("SkyBox Has Invalid Extension", faces[i].substr(idx + 1) != ".jpg")); // Failed to get .jpg to load properly with my Image class
+
             Image image = Image(faces[i]);
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.data());
         }

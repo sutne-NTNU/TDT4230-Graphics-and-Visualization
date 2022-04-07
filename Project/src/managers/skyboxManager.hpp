@@ -22,18 +22,12 @@ public:
         if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 2;
 
         skyboxes.push_back(Skybox(
-            "lake", ".jpg",
-            glm::vec3(0.422755, -0.338738, 0.840556), // Sunlight Direction
-            glm::vec3(0.98, 0.96, 1)                  // Sunlight Color
-            ));
-
-        if (OPTIONS::mode == OPTIONS::DEBUG) return; // Dont load the other skyboxes in debug mode
-
-        skyboxes.push_back(Skybox(
             "forest", ".png",                         // Images
             glm::vec3(0.529871, -0.340380, 0.776775), // Sunlight Direction
             glm::vec3(0.98, 0.97, 0.78)               // Sunlight Color
             ));
+
+        if (OPTIONS::mode == OPTIONS::DEBUG) return; // Dont load the other skyboxes in debug mode
 
         skyboxes.push_back(Skybox(
             "kiara_dawn", ".png",                     // Images

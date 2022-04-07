@@ -79,8 +79,6 @@ namespace Gloom
             attach(root + vertexFilename);
             attach(root + fragmentFilename);
             link();
-
-            // assert(("Shader is not valid", isValid()));
         }
 
         void activate()

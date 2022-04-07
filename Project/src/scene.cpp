@@ -52,27 +52,19 @@ float rotationSpeed     = 15;
 void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-    // Update pressed keys, used for smooth movement
-    keyboard->handleKeyAction(key, action);
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
-    if (key == GLFW_KEY_L && action == GLFW_PRESS) skyboxManager->swapCubemap();
+    // Update pressed keys, used for smooth movement of camera
+    keyboard->handleKeyAction(key, action); // WASD, LShift, Space
+    // Handle other key presses
+    if (key == GLFW_KEY_X && action == GLFW_PRESS) UTILS::takeScreenshot(window);
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) camera->decreaseSensitivity();
     if (key == GLFW_KEY_E && action == GLFW_PRESS) camera->increaseSensitivity();
     if (key == GLFW_KEY_R && action == GLFW_PRESS) camera->resetSensitivity();
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) skyboxManager->swapCubemap();
     if (key == GLFW_KEY_T && action == GLFW_PRESS) rotationSpeed = rotationSpeed == 15 ? 0 : 15;
     if (key == GLFW_KEY_M && action == GLFW_PRESS)
     {
         bustAppearanceIndex = (bustAppearanceIndex + 1) % BUST_APPEARANCES.size();
         bust->appearance.setTo(BUST_APPEARANCES[bustAppearanceIndex]);
-    }
-    if (key == GLFW_KEY_X && action == GLFW_PRESS) UTILS::takeScreenshot(window);
-    // Debugging
-    if (key == GLFW_KEY_P && action == GLFW_PRESS)
-    {
-        std::cout << "Sun -> Camera: " << glm::to_string(camera->getVectorIntoCamera()) << std::endl;
-        std::cout << "Camera:\n\tPos:" << glm::to_string(camera->position)
-                  << "\n\tPitch: " << camera->pitch
-                  << "\n\tYaw: " << camera->yaw << std::endl;
     }
 }
 
@@ -109,9 +101,8 @@ void initScene(GLFWwindow *window)
 void initSceneGraph()
 {
     // Construct Objects
-    float size = 6;
-    shapes     = new SceneNode();
-    // SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), CHROME);
+    float size          = 6;
+    shapes              = new SceneNode();
     SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), MATTE_RED);
     SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), MATTE_BLUE);
     SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), CHROME);
@@ -141,13 +132,11 @@ void initSceneGraph()
 
     float spacing = size * 1.5;
 
-    // prism->position.x    = spacing * -2;
     pyramid->position.x  = spacing * -1;
     cube->position.x     = spacing * 1;
     sphere->position.x   = spacing * 0;
     cylinder->position.x = spacing * 2;
 
-    // prism->rotate(90);
     bust->setScale(100);
     bust->translate(0, -25, 150);
     bust->rotate(0, 180, 0);
@@ -158,9 +147,6 @@ void initSceneGraph()
 /** Executed At start of each new frame to update all positions and states */
 void updateState(GLFWwindow *window, float deltaTime)
 {
-    // Find updated cameraposition
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
     camera->updatePosition(deltaTime, keyboard->keysCurrentlyPressed);
     bust->rotate(0, deltaTime * rotationSpeed, 0);
 }
@@ -178,9 +164,9 @@ void renderFrame(GLFWwindow *window)
 
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// sorry about the duplicate code here, but it's a lot easier to read what happens in each render-pass like this   //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// lots of duplicate code here, but it's a lot easier to read what happens in each render-pass like this   //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -216,32 +202,36 @@ void renderRefractionStep(GLFWwindow *window)
  */
 void renderReflectionStep(GLFWwindow *window)
 {
-    for (SceneNode *node : root->getAllChildren())
+    // for (SceneNode *node : root->getAllChildren())
+    // {
+    //     if (node->appearance.reflectivity == 0) continue;
+    SceneNode *node = root;
+    // Activate this nodes reflection framebuffer
+    node->reflectionBuffer->activate();
+    for (unsigned int side = 0; side < 6; side++)
     {
-        if (node->appearance.reflectivity == 0) continue;
+        // Update all transformations
+        glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
+        glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
 
-        node->reflectionBuffer->activate();
-        for (unsigned int side = 0; side < 6; side++)
-        {
-            node->reflectionBuffer->selectRenderTargetSide(side);
+        skyboxManager->updateVP(view, projection);
+        root->updateTransformations(glm::mat4(1), projection * view);
 
-            glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
-            glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
+        // Render to correct face of the cubemap
+        node->reflectionBuffer->selectRenderTargetSide(side);
 
-            skyboxManager->updateVP(view, projection);
-            root->updateTransformations(glm::mat4(1), projection * view);
+        // Pass uniforms to shader
+        shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
+        shader->setUniform("camera.position", node->position);
+        shader->setUniform("sun.color", skyboxManager->getSunColor());
+        shader->setUniform("sun.direction", skyboxManager->getSunDirection());
 
-            skyboxManager->render(shader);
-
-            shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
-            shader->setUniform("camera.position", node->position);
-            shader->setUniform("sun.color", skyboxManager->getSunColor());
-            shader->setUniform("sun.direction", skyboxManager->getSunDirection());
-
-            root->render(shader);
-        }
-        glBindTextureUnit(BINDINGS::reflection_cubemap, node->reflectionBuffer->textureID);
+        // Render Scene
+        skyboxManager->render(shader);
+        root->render(shader);
     }
+    glBindTextureUnit(BINDINGS::reflection_cubemap, node->reflectionBuffer->textureID);
+    // }
 }
 
 
@@ -252,20 +242,23 @@ void renderReflectionStep(GLFWwindow *window)
  */
 void renderFinal(GLFWwindow *window)
 {
-    // Update all transformation matrices
+    // Update all transformations and matrices
     glm::mat4 projection = UTILS::getPerspectiveMatrix(60);
-    glm::mat4 view       = camera->getViewMatrix();
+    glm::mat4 view       = UTILS::getViewMatrix(camera->position, camera->front, camera->up);
 
     skyboxManager->updateVP(view, projection);
     root->updateTransformations(glm::mat4(1), projection * view);
 
     // Activate correct framebuffer
     Framebuffer::activateScreen();
-    shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
 
-    // Render the rest of the scene
-    shader->setUniform("camera.position", camera->getPosition());
+    // Pass uniforms
+    shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
+    shader->setUniform("camera.position", camera->position);
     shader->setUniform("sun.color", skyboxManager->getSunColor());
     shader->setUniform("sun.direction", skyboxManager->getSunDirection());
+
+    // Render Scene
+    skyboxManager->render(shader);
     root->render(shader);
 }

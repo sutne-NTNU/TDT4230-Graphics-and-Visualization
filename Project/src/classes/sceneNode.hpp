@@ -65,8 +65,8 @@ public:
         scale          = glm::vec3(1, 1, 1);
         referencePoint = glm::vec3(0, 0, 0);
 
-        reflectionBuffer = new Framebuffer(WINDOW::width);
-        refractionBuffer = new Framebuffer(WINDOW::width);
+        reflectionBuffer = new Framebuffer(100);
+        refractionBuffer = new Framebuffer(100);
     }
 
     /** Initializes a SceneNode with VAO and VAI index count from a mesh */
