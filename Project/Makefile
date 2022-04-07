@@ -5,29 +5,37 @@ help:
 	@echo -e "Try one of these make targets:\n"
 	@grep "^\.PHONY: " Makefile | cut -d" " -f2- | sed -e "s/ /\n/g" | grep -v "^_"
 
-.PHONY: run
-run: build
-	cd build && ./TDT4230_Project
+
 
 .PHONY: build
 build: build/TDT4230_Project
-build/TDT4230_Project: ${SOURCES} | build/Makefile has-make
+build/TDT4230_Project: ${SOURCES} build/Makefile | has-make
 	make -C build
 
-build/Makefile: | build/ _submodules has-cmake
-	cd build && cmake ..
 
-.PHONY: _submodules
-_submodules: | has-git
-	@git submodule update --init
+
+.PHONY: run
+run: 
+	cd build && ./TDT4230_Project
+
+
+
+.PHONY: build-and-run
+build-and-run: build
+	clear && cd build && ./TDT4230_Project
+
+
 
 .PHONY: clean
 clean:
-	# TODO: submodules
 	@rm -rfv build/*
 
 
 # === helpers: ===
+
+build/Makefile: | build/ has-cmake
+	cd build && cmake ..
+
 
 # make folders, use as order-only prerequisite
 %/:
