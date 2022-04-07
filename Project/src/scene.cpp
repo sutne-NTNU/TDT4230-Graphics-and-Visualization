@@ -118,10 +118,10 @@ void initSceneGraph()
     float size = 6;
     shapes     = new SceneNode();
     // SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), CHROME);
-    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), CHROME);
-    SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), CHROME);
+    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), MATTE_RED);
+    SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), MATTE_BLUE);
     SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), CHROME);
-    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), CHROME);
+    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), MATTE_BLUE);
 
     std::string resolution = "1k";
     if (OPTIONS::mode == OPTIONS::DEMO) resolution = "4k";
@@ -132,7 +132,6 @@ void initSceneGraph()
     shapes->addChild(pyramid);
     shapes->addChild(cube);
     shapes->addChild(sphere);
-    shapes->addChild(cylinder);
     root->addChild(bust);
 
     // Place Objects in their initial positions
@@ -243,7 +242,6 @@ void renderNode(SceneNode *node)
             glBindTextureUnit(BINDINGS::normal_map, node->appearance.texture.normalID);
             glBindTextureUnit(BINDINGS::roughness_map, node->appearance.texture.roughnessID);
         }
-
         // Bind this nodes vertices and draw
         glBindVertexArray(node->vao.ID);
         glDrawElements(GL_TRIANGLES, node->vao.indexCount, GL_UNSIGNED_INT, nullptr);
@@ -313,16 +311,19 @@ void renderReflectionStep(GLFWwindow *window)
     };
 
     framebuffers->activateCubemapBuffer();
-
+    glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
 
     for (unsigned int side = 0; side < 6; side++)
     {
         framebuffers->selectCubemapTarget(side);
 
-        glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
         glm::mat4 view       = UTILS::getViewMatrix(root->position, viewDirections[side], upDirections[side]);
+        if(side != 0 && side != 1){
+            projection = UTILS::getPerspectiveMatrix(59.0);
+        }
 
         skybox->updateVP(view, projection);
+        updateNodeTransformations(root, glm::mat4(1), projection * view);
 
         shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
         shader->setUniform(UNIFORMS::MVP, skybox->VP);
@@ -333,7 +334,6 @@ void renderReflectionStep(GLFWwindow *window)
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);
 
-        updateNodeTransformations(root, glm::mat4(1), projection * view);
 
         shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
         shader->setUniform("camera.position", root->position);
@@ -354,7 +354,7 @@ void renderReflectionStep(GLFWwindow *window)
 void renderFinal(GLFWwindow *window)
 {
     // Update all transformation matrices
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(45);
+    glm::mat4 projection = UTILS::getPerspectiveMatrix(60);
     glm::mat4 view       = camera->getViewMatrix();
 
     skybox->updateVP(view, projection);
@@ -362,7 +362,6 @@ void renderFinal(GLFWwindow *window)
 
     // Activate correct framebuffer
     framebuffers->activateScreenBuffer();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
 
     // Render skybox

@@ -45,7 +45,7 @@ public:
     void selectCubemapTarget(unsigned int side)
     {
         // we have to update to the correct cubemap texture, otherwise they would all render to the same side (right)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, CUBEMAP::sides[side], cubemapFrameBuffer.textureID, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, cubemapFrameBuffer.textureID, 0);
         // Clear this side of the cubemap before rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }

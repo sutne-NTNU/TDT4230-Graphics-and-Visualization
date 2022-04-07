@@ -34,9 +34,9 @@ namespace UTILS
      *
      * @param FOV Field of View of the camera in degrees
      */
-    glm::mat4 getPerspectiveMatrix(int FOV)
+    glm::mat4 getPerspectiveMatrix(float FOV)
     {
-        return glm::perspective(glm::radians((float)FOV), float(WINDOW::width) / float(WINDOW::height), 0.1f, 350.f);
+        return glm::perspective(glm::radians(FOV), float(WINDOW::width) / float(WINDOW::height), 0.1f, 350.f);
     }
 
 

@@ -65,14 +65,14 @@ struct Mesh
                 normals.push_back(glm::triangleNormal(p1, p3, p2));
                 break;
             case CURVE:
-                normals.push_back(glm::vec3(p1.x, 0, p1.z));
-                normals.push_back(glm::vec3(p3.x, 0, p3.z));
-                normals.push_back(glm::vec3(p2.x, 0, p2.z));
+                normals.push_back(glm::normalize(glm::vec3(p1.x, 0, p1.z)));
+                normals.push_back(glm::normalize(glm::vec3(p3.x, 0, p3.z)));
+                normals.push_back(glm::normalize(glm::vec3(p2.x, 0, p2.z)));
                 break;
             case SPHERE:
-                normals.push_back(p1);
-                normals.push_back(p3);
-                normals.push_back(p2);
+                normals.push_back(glm::normalize(p1));
+                normals.push_back(glm::normalize(p3));
+                normals.push_back(glm::normalize(p2));
                 break;
         }
     }

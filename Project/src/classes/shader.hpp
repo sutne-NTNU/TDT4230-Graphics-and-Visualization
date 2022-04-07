@@ -120,28 +120,18 @@ namespace Gloom
         void setUniform(std::string const &uniformName, T value)
         {
             GLint location = getUniformLocation(uniformName);
-            setUniform<T>(location, value);
+            setUniform(location, value);
         }
 
-        template <typename T>
-        void setUniform(unsigned int location, T value) { }
 
-        template <>
-        void setUniform<bool>(unsigned int location, bool value) { glUniform1i(location, value); }
-        template <>
-        void setUniform<int>(unsigned int location, int value) { glUniform1i(location, value); }
-        template <>
-        void setUniform<float>(unsigned int location, float value) { glUniform1f(location, value); }
-        template <>
-        void setUniform<glm::vec2>(unsigned int location, glm::vec2 value) { glUniform2fv(location, 1, glm::value_ptr(value)); }
-        template <>
-        void setUniform<glm::vec3>(unsigned int location, glm::vec3 value) { glUniform3fv(location, 1, glm::value_ptr(value)); }
-        template <>
-        void setUniform<glm::vec4>(unsigned int location, glm::vec4 value) { glUniform4fv(location, 1, glm::value_ptr(value)); }
-        template <>
-        void setUniform<glm::mat3>(unsigned int location, glm::mat3 value) { glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value)); }
-        template <>
-        void setUniform<glm::mat4>(unsigned int location, glm::mat4 value) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value)); }
+        void setUniform(unsigned int location, bool value) { glUniform1i(location, value); }
+        void setUniform(unsigned int location, int value) { glUniform1i(location, value); }
+        void setUniform(unsigned int location, float value) { glUniform1f(location, value); }
+        void setUniform(unsigned int location, glm::vec2 value) { glUniform2fv(location, 1, glm::value_ptr(value)); }
+        void setUniform(unsigned int location, glm::vec3 value) { glUniform3fv(location, 1, glm::value_ptr(value)); }
+        void setUniform(unsigned int location, glm::vec4 value) { glUniform4fv(location, 1, glm::value_ptr(value)); }
+        void setUniform(unsigned int location, glm::mat3 value) { glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value)); }
+        void setUniform(unsigned int location, glm::mat4 value) { glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value)); }
 
 
 

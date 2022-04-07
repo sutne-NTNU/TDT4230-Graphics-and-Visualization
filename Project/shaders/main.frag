@@ -75,7 +75,7 @@ vec3 sunlight(float rgh, vec3 N)
     vec3 camera_direction     = normalize(camera.position - in_fragment_position);
     vec3 reflection_direction = reflect(sun.direction, N);
 
-    vec3 ambient  = sun.color * 0.3; // Brightness where no light hits
+    vec3 ambient  = sun.color * 0.2; // Brightness where no light hits
     vec3 diffuse  = sun.color * max(dot(N, -sun.direction), 0);
     vec3 specular = sun.color * pow(max(dot(camera_direction, reflection_direction), 0.0), shininess_factor);
     return ambient + diffuse + specular;
@@ -240,8 +240,6 @@ void main()
         vec3 normal     = normalize(in_normal);
         vec3 color      = appearance.color;
         float roughness = appearance.roughness;
-
-
 
         // Textured Geometry
         if (TYPE == GEOMETRY_TEXTURED)
