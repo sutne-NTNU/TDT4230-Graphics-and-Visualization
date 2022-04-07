@@ -45,33 +45,26 @@ in layout(location = 4) mat3 TBN;
 in layout(location = 10) flat int TYPE;
 in layout(location = 11) flat int PASS;
 
-uniform highp int debug_pass_one;
-uniform highp int debug_pass_two;
 
 uniform Camera camera;
-uniform Sun sun;
 uniform Appearance appearance;
+uniform Sun sun;
 
-
+// Resource textures
 uniform layout(binding = 0) samplerCube skybox;
 uniform layout(binding = 1) sampler2D texture_map;
 uniform layout(binding = 2) sampler2D normal_map;
 uniform layout(binding = 3) sampler2D roughness_map;
 
+// Created textures from framebuffers
 uniform layout(binding = 10) samplerCube reflection_cubemap;
+uniform layout(binding = 11) sampler2D refraction_backface_normal_map;
+
 
 uniform sampler2D debugTexture;
 
 // Out
 out vec4 fragment_color;
-// Out to textures
-// out layout(location = 0) vec3 refraction_backsides;
-// out layout(location = 1) vec3 cubemap_right;
-// out layout(location = 2) vec3 cubemap_left;
-// out layout(location = 3) vec3 cubemap_top;
-// out layout(location = 4) vec3 cubemap_bottom;
-// out layout(location = 5) vec3 cubemap_front;
-// out layout(location = 6) vec3 cubemap_back;
 
 
 
@@ -82,10 +75,9 @@ vec3 sunlight(float rgh, vec3 N)
     vec3 camera_direction     = normalize(camera.position - in_fragment_position);
     vec3 reflection_direction = reflect(sun.direction, N);
 
-    vec3 ambient  = sun.color * 0.4; // Brightness where no light hits
+    vec3 ambient  = sun.color * 0.3; // Brightness where no light hits
     vec3 diffuse  = sun.color * max(dot(N, -sun.direction), 0);
     vec3 specular = sun.color * pow(max(dot(camera_direction, reflection_direction), 0.0), shininess_factor);
-
     return ambient + diffuse + specular;
 }
 
@@ -162,19 +154,6 @@ vec3 apply_fresnel(vec3 reflection, vec3 refraction, vec3 normal)
 
 void main()
 {
-    if (PASS == DEBUG_1)
-    {
-        fragment_color = vec4(0, 1, 0.05, 1);
-        return;
-    }
-    else if (PASS == DEBUG_2)
-    {
-        fragment_color = texture(debugTexture, in_texture_coordinates);
-        return;
-    }
-
-
-
     if (PASS == REFRACTION)
     {
         // Everything should be (0,0,0,1) except the backside of the objects that are opaque.

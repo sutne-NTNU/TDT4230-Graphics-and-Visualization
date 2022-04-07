@@ -38,7 +38,6 @@ FrameBufferHandler *framebuffers;
 
 // Nodes that are updated after init
 SceneNode *root;
-SceneNode *cameraBall;
 SceneNode *shapes;
 
 SceneNode *bust;
@@ -116,24 +115,20 @@ void initScene(GLFWwindow *window)
 void initSceneGraph()
 {
     // Construct Objects
-    float size          = 6;
-    shapes              = new SceneNode();
-    SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), MATTE_RED);
-    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), GLASS);
+    float size = 6;
+    shapes     = new SceneNode();
+    // SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), CHROME);
+    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), CHROME);
     SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), CHROME);
-    SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), GLASS);
+    SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), CHROME);
     SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), CHROME);
-
-    cameraBall = SceneNode::fromMesh(SHAPES::Sphere(1), MATTE_RED);
 
     std::string resolution = "1k";
     if (OPTIONS::mode == OPTIONS::DEMO) resolution = "4k";
     bust = SceneNode::fromModelName("marble_bust", resolution);
 
     // Build SceneGraph
-    root->addChild(cameraBall);
     root->addChild(shapes);
-    shapes->addChild(prism);
     shapes->addChild(pyramid);
     shapes->addChild(cube);
     shapes->addChild(sphere);
@@ -153,13 +148,13 @@ void initSceneGraph()
 
     float spacing = size * 1.5;
 
-    prism->position.x    = spacing * -2;
+    // prism->position.x    = spacing * -2;
     pyramid->position.x  = spacing * -1;
-    cube->position.x     = spacing * 0;
-    sphere->position.x   = spacing * 1;
+    cube->position.x     = spacing * 1;
+    sphere->position.x   = spacing * 0;
     cylinder->position.x = spacing * 2;
 
-    prism->rotate(90);
+    // prism->rotate(90);
     bust->setScale(100);
     bust->translate(0, -25, 150);
     bust->rotate(0, 180, 0);
@@ -175,7 +170,6 @@ void updateState(GLFWwindow *window, double deltaTime)
 
     camera->updatePosition(deltaTime, keyboard->keysCurrentlyPressed);
     bust->rotate(0, deltaTime * rotationSpeed, 0);
-    cameraBall->position = camera->position;
 }
 
 
@@ -274,15 +268,9 @@ void renderNode(SceneNode *node)
 void renderRefractionStep(GLFWwindow *window)
 {
     framebuffers->activateRefractionBuffer();
-    glEnable(GL_DEPTH_TEST);
-    glClearColor(0.3, 0.3, 0.3, 1);
-
-    glEnable(GL_TEXTURE_2D);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, framebuffers->refractionFramebuffer.textureID);
 
     // Calculate ViewProjection Matrix
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(45);
+    glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
     glm::mat4 view       = camera->getViewMatrix();
 
     // Update Transformation for SceneGraph
@@ -291,12 +279,10 @@ void renderRefractionStep(GLFWwindow *window)
     shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFRACTION);
     shader->setUniform("camera.position", camera->getPosition());
 
-    shader->setUniform("debug_pass_one", true);
-    shader->setUniform("debug_pass_two", false);
-
     glCullFace(GL_FRONT);
     renderNode(root);
     glCullFace(GL_BACK);
+    glBindTextureUnit(11, framebuffers->refractionFramebuffer.textureID);
 }
 
 
@@ -318,27 +304,29 @@ void renderReflectionStep(GLFWwindow *window)
     };
     // Use up vectors to rotate faces correctly
     std::vector<glm::vec3> upDirections = {
-        glm::vec3(0, -1, 0),
-        glm::vec3(0, -1, 0),
-        glm::vec3(0, 0, 1),
-        glm::vec3(0, 0, -1),
-        glm::vec3(0, -1, 0),
-        glm::vec3(0, -1, 0)
+        glm::vec3(0, -1, 0), // right
+        glm::vec3(0, -1, 0), // left
+        glm::vec3(0, 0, 1),  // top
+        glm::vec3(0, 0, -1), // bottom
+        glm::vec3(0, -1, 0), // front
+        glm::vec3(0, -1, 0)  // back
     };
 
     framebuffers->activateCubemapBuffer();
 
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
+
     for (unsigned int side = 0; side < 6; side++)
     {
         framebuffers->selectCubemapTarget(side);
-        glm::mat4 view = UTILS::getViewMatrix(root->position, viewDirections[side], upDirections[side]);
+
+        glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
+        glm::mat4 view       = UTILS::getViewMatrix(root->position, viewDirections[side], upDirections[side]);
 
         skybox->updateVP(view, projection);
 
-        // Render skybox
         shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
         shader->setUniform(UNIFORMS::MVP, skybox->VP);
+        // Render skybox
         glDepthMask(GL_FALSE);
         glBindVertexArray(skybox->vaoID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getTextureID());
@@ -348,7 +336,7 @@ void renderReflectionStep(GLFWwindow *window)
         updateNodeTransformations(root, glm::mat4(1), projection * view);
 
         shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
-        shader->setUniform("camera.position", camera->getPosition());
+        shader->setUniform("camera.position", root->position);
         shader->setUniform("sun.color", skybox->getSunColor());
         shader->setUniform("sun.direction", skybox->getSunDirection());
 
@@ -377,9 +365,6 @@ void renderFinal(GLFWwindow *window)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
 
-    shader->setUniform("debug_pass_one", false);
-    shader->setUniform("debug_pass_two", false);
-
     // Render skybox
     shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
     shader->setUniform(UNIFORMS::MVP, skybox->VP);
@@ -394,61 +379,4 @@ void renderFinal(GLFWwindow *window)
     shader->setUniform("sun.color", skybox->getSunColor());
     shader->setUniform("sun.direction", skybox->getSunDirection());
     renderNode(root);
-}
-
-
-// Creates a quad and renders the contents of the frambuffer to it
-void renderContentsOf(Framebuffer framebuffer)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
-    glDisable(GL_DEPTH_TEST);
-    glClearColor(0.4f, 0.5f, 0.9f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Mesh mesh;
-    mesh.vertices = {
-        { -1, -1, 0 },
-        { 1, -1, 0 },
-        { 1, 1, 0 },
-        { -1, 1, 0 }
-    };
-    mesh.indices = {
-        0, 1, 2,
-        2, 3, 0
-    };
-    mesh.textureCoordinates = {
-        { 0, 0 },
-        { 1, 0 },
-        { 1, 1 },
-        { 0, 1 }
-    };
-
-
-    unsigned int vaoID;
-    glGenVertexArrays(1, &vaoID);
-    glBindVertexArray(vaoID);
-    unsigned int vertices;
-    glGenBuffers(1, &vertices);
-    glBindBuffer(GL_ARRAY_BUFFER, vertices);
-    glBufferData(GL_ARRAY_BUFFER, mesh.vertices.size() * sizeof(glm::vec3), mesh.vertices.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), 0);
-    glEnableVertexAttribArray(0);
-    unsigned int texcoords;
-    glGenBuffers(1, &texcoords);
-    glBindBuffer(GL_ARRAY_BUFFER, texcoords);
-    glBufferData(GL_ARRAY_BUFFER, mesh.textureCoordinates.size() * sizeof(glm::vec2), mesh.textureCoordinates.data(), GL_STATIC_DRAW);
-    glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
-    glEnableVertexAttribArray(4);
-    unsigned int indexBufferID;
-    glGenBuffers(1, &indexBufferID);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.indices.size() * sizeof(unsigned int), mesh.indices.data(), GL_STATIC_DRAW);
-
-
-    shader->setUniform("debug_pass_one", false);
-    shader->setUniform("debug_pass_two", true);
-
-    glBindVertexArray(vaoID);
-    glBindTexture(GL_TEXTURE_2D, framebuffer.textureID);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
 }

@@ -83,6 +83,11 @@ public:
                 glm::vec3(0.539989, -0.414694, 0.732421), // Sunlight Direction
                 glm::vec3(1, 1, 1)                        // Sunlight Color
                 ));
+
+        if (OPTIONS::mode == OPTIONS::DEMO)
+        {
+            activeSkyboxIndex = 2;
+        }
     }
 
     // Removes the translation from the view matrix and save VP for drawing later

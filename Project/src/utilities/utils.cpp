@@ -32,8 +32,7 @@ namespace UTILS
     /**
      * @brief Creates and returns projection matrix based on the params
      *
-     * @param FOV Field of View of the camera
-     * @return glm::vec4
+     * @param FOV Field of View of the camera in degrees
      */
     glm::mat4 getPerspectiveMatrix(int FOV)
     {

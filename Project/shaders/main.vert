@@ -10,8 +10,7 @@
 #define REFLECTION 1 // Render scene to what will become a cubemap
 #define RENDER 2     // Render entire scene
 
-#define DEBUG_1 10
-#define DEBUG_2 11
+
 
 // In
 in layout(location = 0) vec3 in_position;
@@ -26,8 +25,7 @@ uniform layout(location = 3) mat3 N;   // Normal (Transformation) Matrix
 
 uniform layout(location = 10) int TYPE;
 uniform layout(location = 11) int PASS;
-uniform highp int debug_pass_one;
-uniform highp int debug_pass_two;
+
 
 
 // Out
@@ -42,21 +40,6 @@ out layout(location = 11) flat int out_PASS;
 
 void main()
 {
-    if (PASS == DEBUG_1)
-    {
-        out_texture_coordinates = in_texture_coordinates;
-        gl_Position             = MVP * vec4(in_position, 1);
-        return;
-    }
-    if (PASS == DEBUG_2)
-    {
-        out_texture_coordinates = in_texture_coordinates;
-        gl_Position             = vec4(in_position.x, in_position.y, 0, 1);
-        return;
-    }
-
-
-
     if (TYPE == SKYBOX)
     {
         gl_Position = MVP * vec4(in_position, 1);
