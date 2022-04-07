@@ -4,14 +4,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build and Run",
+            "label": "CMake",
             "type": "shell",
-            "command": "make build-and-run",
-            "windows": {
-                "command": "MSBuild.exe .\\TDT4230_Project.sln -consoleloggerparameters:ErrorsOnly; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }",
-                "options": {
-                    "cwd": "build"
-                },
+            "command": "cmake ..",
+            "options": {
+                "cwd": "build"
             },
             "presentation": {
                 "clear": true,
@@ -24,11 +21,14 @@
             },
         },
         {
-            "label": "CMake",
+            "label": "Build and Run",
             "type": "shell",
-            "command": "cmake ..",
-            "options": {
-                "cwd": "build"
+            "command": "make build-and-run",
+            "windows": {
+                "command": "MSBuild.exe .\\TDT4230_Project.sln -consoleloggerparameters:ErrorsOnly; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }",
+                "options": {
+                    "cwd": "build"
+                },
             },
             "presentation": {
                 "clear": true,
@@ -85,7 +85,27 @@
             "type": "shell",
             "command": "make clean",
             "windows": {
-                "command": "rmdir /s /q build",
+                "command": "echo \"not supported on windows\"",
+                "options": {
+                    "cwd": "build"
+                },
+            },
+            "presentation": {
+                "clear": true,
+                "echo": true,
+                "focus": true,
+                "showReuseMessage": false,
+                "reveal": "always",
+                "revealProblems": "onProblem",
+                "panel": "shared",
+            },
+        },
+        {
+            "label": "Show Warnings",
+            "type": "shell",
+            "command": "make build",
+            "windows": {
+                "command": "MSBuild.exe .\\TDT4230_Project.sln -consoleloggerparameters:WarningsOnly",
                 "options": {
                     "cwd": "build"
                 },

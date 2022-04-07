@@ -1,8 +1,8 @@
 #include "options.hpp"
 #include "program.hpp"
-#include "window.hpp"
 
-
+#include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 // A callback which allows GLFW to report errors whenever they occur
 static void glfwErrorCallback(int error, const char *description)

@@ -2,6 +2,17 @@
 #define OPTIONS_HPP
 #pragma once
 
+#include <string>
+
+namespace WINDOW
+{
+    const std::string title = "TDT4230 - Project";
+    const int width         = 1920;
+    const int height        = 1080;
+    const bool resizable    = false;
+    const int samples       = 4;
+}
+
 
 
 namespace OPTIONS

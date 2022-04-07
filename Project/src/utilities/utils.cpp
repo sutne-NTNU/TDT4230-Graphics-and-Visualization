@@ -7,10 +7,10 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-#include "image.hpp"
-#include "mesh.hpp"
+#include "classes/image.hpp"
+#include "classes/mesh.hpp"
+#include "options.hpp"
 #include "structs/appearance_struct.hpp"
-#include "window.hpp"
 
 
 
@@ -171,7 +171,7 @@ namespace UTILS
         {
             appearance->hasTexture      = true;
             appearance->useTextureMap   = true;
-            appearance->texture.colorID = initTexture(IMAGE::loadFrom((root + diffuse)));
+            appearance->texture.colorID = initTexture(Image(root + diffuse));
         }
         else
         {
@@ -181,7 +181,7 @@ namespace UTILS
         if (!fnor.fail())
         {
             appearance->hasTexture       = true;
-            appearance->texture.normalID = initTexture(IMAGE::loadFrom((root + normal)));
+            appearance->texture.normalID = initTexture(Image((root + normal)));
         }
         else
         {
@@ -191,7 +191,7 @@ namespace UTILS
         if (!frough.fail())
         {
             appearance->hasTexture          = true;
-            appearance->texture.roughnessID = initTexture(IMAGE::loadFrom((root + roughness)));
+            appearance->texture.roughnessID = initTexture(Image((root + roughness)));
         }
         else
         {
@@ -203,7 +203,7 @@ namespace UTILS
 
     glm::vec3 sphereCoordinates(float radius, int slice, int slices, int layer, int layers)
     {
-        // math from: http://www.songho.ca/opengl/gl_sphere
+        // math from: http://www.songho.ca/opengl/gl_sphere.html
         float theta = 2 * PI * slice / slices;
         float phi   = PI * layer / layers - PI / 2;
 
@@ -229,10 +229,10 @@ namespace UTILS
         char buffer[80];
         time(&rawtime);
         timeinfo = localtime(&rawtime);
-        strftime(buffer, 80, " %d-%m-%Y %H%M%S", timeinfo);
+        strftime(buffer, 80, "%d-%m-%Y %H%M%S", timeinfo);
         std::string timestamp = std::string(buffer);
 
         // Save image to file
-        IMAGE::write("screenshot" + timestamp + ".png", width, height, pixels);
+        Image::write("screenshot " + timestamp + ".png", width, height, pixels);
     }
 }

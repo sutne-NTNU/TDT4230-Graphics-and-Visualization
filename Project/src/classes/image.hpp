@@ -2,19 +2,12 @@
 #define IMAGE_HPP
 #pragma once
 
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <vector>
 
-
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
-
 #include "options.hpp"
+#include "utilities/wrappers.hpp"
 
 
 
@@ -39,7 +32,7 @@ public:
     Image() = default;
 
     /**
-     * @brief Takes a filename and loads the data to an Image struct
+     * @brief Loads image form the file and stores it to easy to read variables
      *
      * @param filename The filename of the image to load
      */
@@ -47,7 +40,7 @@ public:
     {
         // Load image
         int channels;
-        unsigned char *data = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+        unsigned char *data = STB::load(filename.c_str(), &width, &height, &channels, 4);
         if (!data)
         {
             std::cout << "Failed to load image: " << filename << std::endl;
@@ -93,13 +86,8 @@ public:
      */
     static void write(std::string filename, int width, int height, void *pixels, std::string root = "../images/")
     {
-        // Create directory if it doesn't exist
-        if (root.back() != '/') root += "/";
-        if (!std::filesystem::exists(root)) std::filesystem::create_directory(root);
-        // Write image
         std::string file = root + filename;
-        stbi_flip_vertically_on_write(true);
-        stbi_write_png(file.c_str(), width, height, 4, pixels, 0);
+        STB::write(file.c_str(), width, height, pixels);
         std::cout << "Wrote image: " << file << std::endl;
         free(pixels);
     }

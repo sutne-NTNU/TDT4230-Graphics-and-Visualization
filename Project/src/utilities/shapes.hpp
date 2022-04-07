@@ -1,6 +1,6 @@
 #pragma once
 
-#include "structs/mesh_struct.hpp"
+#include "classes/mesh.hpp"
 
 namespace SHAPES
 {

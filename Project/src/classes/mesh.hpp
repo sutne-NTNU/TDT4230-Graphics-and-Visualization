@@ -5,6 +5,7 @@
 #include <vector>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include "cgltf.h"
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <glad/glad.h>
@@ -15,11 +16,9 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/vec3.hpp>
 
-#define CGLTF_IMPLEMENTATION
-#include "cgltf.h"
 
 #include "options.hpp"
-
+#include "utilities/wrappers.hpp"
 
 
 enum SurfaceType

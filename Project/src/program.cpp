@@ -6,8 +6,9 @@
 
 #include <glad/glad.h>
 
-#include "scene.hpp"
 #include "options.hpp"
+#include "scene.hpp"
+
 
 
 
@@ -20,7 +21,7 @@ long nanoSince(std::chrono::steady_clock::time_point time)
 
 static std::chrono::steady_clock::time_point _previousFrameTime = std::chrono::steady_clock::now();
 /** Return number of seconds since the last time this function was called */
-double getSecondsSinceLastFrame(int FPS_LIMIT = 60)
+float getSecondsSinceLastFrame(int FPS_LIMIT = 60)
 {
     long frameDelta = nanoSince(_previousFrameTime);
     if (0 < FPS_LIMIT)
@@ -35,7 +36,7 @@ double getSecondsSinceLastFrame(int FPS_LIMIT = 60)
     _previousFrameTime = std::chrono::steady_clock::now();
 
     // Convert the time delta in nanoseconds to seconds
-    double frameSeconds = frameDelta / 1000000000.0;
+    float frameSeconds = frameDelta / 1000000000.0;
 
     // std::cout << "FPS: " << (int)(1.0 / frameSeconds) << std::endl;
 

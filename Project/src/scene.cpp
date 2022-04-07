@@ -12,29 +12,26 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
-#include <glm/vec3.hpp>
 
 #include "classes/camera.hpp"
-#include "classes/framebufferHandler.hpp"
+#include "classes/framebuffer.hpp"
+#include "classes/image.hpp"
 #include "classes/keyboard.hpp"
+#include "classes/mesh.hpp"
 #include "classes/sceneNode.hpp"
 #include "classes/shader.hpp"
-#include "classes/skyboxHandler.hpp"
+#include "managers/skyboxManager.hpp"
 #include "options.hpp"
 #include "structs/appearance_struct.hpp"
-#include "structs/mesh_struct.hpp"
-#include "utilities/image.hpp"
 #include "utilities/shapes.hpp"
 #include "utilities/utils.hpp"
-#include "window.hpp"
 
 
 
 Gloom::Shader *shader;
 Camera *camera;
 Keyboard *keyboard;
-SkyboxHandler *skybox;
-FrameBufferHandler *framebuffers;
+SkyboxManager *skyboxManager;
 
 // Nodes that are updated after init
 SceneNode *root;
@@ -58,16 +55,14 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
     // Update pressed keys, used for smooth movement
     keyboard->handleKeyAction(key, action);
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
-    if (key == GLFW_KEY_L && action == GLFW_PRESS) skybox->swapCubemap();
+    if (key == GLFW_KEY_L && action == GLFW_PRESS) skyboxManager->swapCubemap();
     if (key == GLFW_KEY_Q && action == GLFW_PRESS) camera->decreaseSensitivity();
     if (key == GLFW_KEY_E && action == GLFW_PRESS) camera->increaseSensitivity();
     if (key == GLFW_KEY_R && action == GLFW_PRESS) camera->resetSensitivity();
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) rotationSpeed = rotationSpeed == 15 ? 0 : 15;
-    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS) bustAppearanceIndex++;
-    if (key == GLFW_KEY_LEFT && action == GLFW_PRESS) bustAppearanceIndex--;
-    if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_LEFT) && action == GLFW_PRESS)
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) rotationSpeed = rotationSpeed == 15 ? 0 : 15;
+    if (key == GLFW_KEY_M && action == GLFW_PRESS)
     {
-        bustAppearanceIndex = bustAppearanceIndex % BUST_APPEARANCES.size();
+        bustAppearanceIndex = (bustAppearanceIndex + 1) % BUST_APPEARANCES.size();
         bust->appearance.setTo(BUST_APPEARANCES[bustAppearanceIndex]);
     }
     if (key == GLFW_KEY_X && action == GLFW_PRESS) UTILS::takeScreenshot(window);
@@ -98,10 +93,9 @@ void initScene(GLFWwindow *window)
     shader = new Gloom::Shader("main.vert", "main.frag");
     shader->activate();
 
-    skybox       = new SkyboxHandler();
-    framebuffers = new FrameBufferHandler();
-    keyboard     = new Keyboard();
-    camera       = new Camera(glm::vec3(0, 10, 50), -10.0);
+    skyboxManager = new SkyboxManager();
+    keyboard      = new Keyboard();
+    camera        = new Camera(glm::vec3(0, 10, 50), -10.0);
 
     // Create And Inititalize Nodes and SceneGraph
     root = new SceneNode();
@@ -162,7 +156,7 @@ void initSceneGraph()
 
 
 /** Executed At start of each new frame to update all positions and states */
-void updateState(GLFWwindow *window, double deltaTime)
+void updateState(GLFWwindow *window, float deltaTime)
 {
     // Find updated cameraposition
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -184,74 +178,6 @@ void renderFrame(GLFWwindow *window)
 
 
 
-/**
- * @brief Updates all transformations for node and recursively for all its children
- *
- * @param node
- * @param M Model Transformation Matrix
- * @param VP ViewProjection Transformation Matrix
- */
-void updateNodeTransformations(SceneNode *node, glm::mat4 M, glm::mat4 VP)
-{
-    glm::mat4 myTransformation = glm::translate(node->position)
-                               * glm::translate(node->referencePoint)
-                               * glm::rotate(node->rotation.y, glm::vec3(0, 1, 0))
-                               * glm::rotate(node->rotation.x, glm::vec3(1, 0, 0))
-                               * glm::rotate(node->rotation.z, glm::vec3(0, 0, 1))
-                               * glm::scale(node->scale)
-                               * glm::translate(-node->referencePoint);
-
-    node->M   = M * myTransformation;
-    node->N   = glm::mat3(glm::transpose(glm::inverse(node->M)));
-    node->MVP = VP * node->M;
-
-    // Update children
-    for (SceneNode *child : node->children) updateNodeTransformations(child, node->M, VP);
-}
-
-
-
-/** Recursively Render node and its children */
-void renderNode(SceneNode *node)
-{
-    bool isRenderable = node->vao.ID != -1;
-    if (isRenderable)
-    {
-        // Pass transformation matrices to vertex shader
-        shader->setUniform(UNIFORMS::M, node->M);
-        shader->setUniform(UNIFORMS::MVP, node->MVP);
-        shader->setUniform(UNIFORMS::N, node->N);
-
-        // Pass material information to fragment shader
-        shader->setUniform("appearance.color", node->appearance.color);
-        shader->setUniform("appearance.opacity", node->appearance.opacity);
-        shader->setUniform("appearance.roughness", node->appearance.roughness);
-        shader->setUniform("appearance.reflectivity", node->appearance.reflectivity);
-        shader->setUniform("appearance.refraction_index", node->appearance.refractionIndex);
-
-        if (!node->appearance.hasTexture)
-        {
-            shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::GEOMETRY_SHAPE);
-        }
-        else
-        {
-            shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::GEOMETRY_TEXTURED);
-            shader->setUniform("appearance.use_texture_map", node->appearance.useTextureMap);
-
-            glBindTextureUnit(BINDINGS::texture_map, node->appearance.texture.colorID);
-            glBindTextureUnit(BINDINGS::normal_map, node->appearance.texture.normalID);
-            glBindTextureUnit(BINDINGS::roughness_map, node->appearance.texture.roughnessID);
-        }
-        // Bind this nodes vertices and draw
-        glBindVertexArray(node->vao.ID);
-        glDrawElements(GL_TRIANGLES, node->vao.indexCount, GL_UNSIGNED_INT, nullptr);
-    }
-    // Render children
-    for (SceneNode *child : node->children) renderNode(child);
-}
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // sorry about the duplicate code here, but it's a lot easier to read what happens in each render-pass like this   //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -265,22 +191,20 @@ void renderNode(SceneNode *node)
  */
 void renderRefractionStep(GLFWwindow *window)
 {
-    framebuffers->activateRefractionBuffer();
+    // // Calculate ViewProjection Matrix
+    // glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
+    // glm::mat4 view       = camera->getViewMatrix();
 
-    // Calculate ViewProjection Matrix
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
-    glm::mat4 view       = camera->getViewMatrix();
+    // // Update Transformation for SceneGraph
+    // root->updateTransformations(glm::mat4(1), projection * view);
 
-    // Update Transformation for SceneGraph
-    updateNodeTransformations(root, glm::mat4(1), projection * view);
+    // shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFRACTION);
+    // shader->setUniform("camera.position", camera->getPosition());
 
-    shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFRACTION);
-    shader->setUniform("camera.position", camera->getPosition());
-
-    glCullFace(GL_FRONT);
-    renderNode(root);
-    glCullFace(GL_BACK);
-    glBindTextureUnit(11, framebuffers->refractionFramebuffer.textureID);
+    // glCullFace(GL_FRONT);
+    // root->render(shader);
+    // glCullFace(GL_BACK);
+    // glBindTextureUnit(11, framebuffers->refractionFramebuffer.textureID);
 }
 
 
@@ -292,57 +216,32 @@ void renderRefractionStep(GLFWwindow *window)
  */
 void renderReflectionStep(GLFWwindow *window)
 {
-    std::vector<glm::vec3> viewDirections = {
-        glm::vec3(1, 0, 0),  // right
-        glm::vec3(-1, 0, 0), // left
-        glm::vec3(0, 1, 0),  // top
-        glm::vec3(0, -1, 0), // bottom
-        glm::vec3(0, 0, 1),  // front
-        glm::vec3(0, 0, -1)  // back
-    };
-    // Use up vectors to rotate faces correctly
-    std::vector<glm::vec3> upDirections = {
-        glm::vec3(0, -1, 0), // right
-        glm::vec3(0, -1, 0), // left
-        glm::vec3(0, 0, 1),  // top
-        glm::vec3(0, 0, -1), // bottom
-        glm::vec3(0, -1, 0), // front
-        glm::vec3(0, -1, 0)  // back
-    };
-
-    framebuffers->activateCubemapBuffer();
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
-
-    for (unsigned int side = 0; side < 6; side++)
+    for (SceneNode *node : root->getAllChildren())
     {
-        framebuffers->selectCubemapTarget(side);
+        if (node->appearance.reflectivity == 0) continue;
 
-        glm::mat4 view       = UTILS::getViewMatrix(root->position, viewDirections[side], upDirections[side]);
-        if(side != 0 && side != 1){
-            projection = UTILS::getPerspectiveMatrix(59.0);
+        node->reflectionBuffer->activate();
+        for (unsigned int side = 0; side < 6; side++)
+        {
+            node->reflectionBuffer->selectRenderTargetSide(side);
+
+            glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
+            glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
+
+            skyboxManager->updateVP(view, projection);
+            root->updateTransformations(glm::mat4(1), projection * view);
+
+            skyboxManager->render(shader);
+
+            shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
+            shader->setUniform("camera.position", node->position);
+            shader->setUniform("sun.color", skyboxManager->getSunColor());
+            shader->setUniform("sun.direction", skyboxManager->getSunDirection());
+
+            root->render(shader);
         }
-
-        skybox->updateVP(view, projection);
-        updateNodeTransformations(root, glm::mat4(1), projection * view);
-
-        shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
-        shader->setUniform(UNIFORMS::MVP, skybox->VP);
-        // Render skybox
-        glDepthMask(GL_FALSE);
-        glBindVertexArray(skybox->vaoID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getTextureID());
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
-
-
-        shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFLECTION);
-        shader->setUniform("camera.position", root->position);
-        shader->setUniform("sun.color", skybox->getSunColor());
-        shader->setUniform("sun.direction", skybox->getSunDirection());
-
-        renderNode(root);
+        glBindTextureUnit(BINDINGS::reflection_cubemap, node->reflectionBuffer->textureID);
     }
-    glBindTextureUnit(BINDINGS::reflection_cubemap, framebuffers->cubemapFrameBuffer.textureID);
 }
 
 
@@ -357,25 +256,16 @@ void renderFinal(GLFWwindow *window)
     glm::mat4 projection = UTILS::getPerspectiveMatrix(60);
     glm::mat4 view       = camera->getViewMatrix();
 
-    skybox->updateVP(view, projection);
-    updateNodeTransformations(root, glm::mat4(1), projection * view);
+    skyboxManager->updateVP(view, projection);
+    root->updateTransformations(glm::mat4(1), projection * view);
 
     // Activate correct framebuffer
-    framebuffers->activateScreenBuffer();
+    Framebuffer::activateScreen();
     shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::RENDER);
-
-    // Render skybox
-    shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
-    shader->setUniform(UNIFORMS::MVP, skybox->VP);
-    glDepthMask(GL_FALSE);
-    glBindVertexArray(skybox->vaoID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getTextureID());
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glDepthMask(GL_TRUE);
 
     // Render the rest of the scene
     shader->setUniform("camera.position", camera->getPosition());
-    shader->setUniform("sun.color", skybox->getSunColor());
-    shader->setUniform("sun.direction", skybox->getSunDirection());
-    renderNode(root);
+    shader->setUniform("sun.color", skyboxManager->getSunColor());
+    shader->setUniform("sun.direction", skyboxManager->getSunDirection());
+    root->render(shader);
 }

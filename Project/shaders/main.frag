@@ -58,7 +58,7 @@ uniform layout(binding = 3) sampler2D roughness_map;
 
 // Created textures from framebuffers
 uniform layout(binding = 10) samplerCube reflection_cubemap;
-uniform layout(binding = 11) sampler2D refraction_backface_normal_map;
+uniform layout(binding = 11) samplerCube refraction_cubemap;
 
 
 uniform sampler2D debugTexture;
@@ -74,6 +74,8 @@ vec3 sunlight(float rgh, vec3 N)
     float shininess_factor    = 5 / pow(rgh, 2);
     vec3 camera_direction     = normalize(camera.position - in_fragment_position);
     vec3 reflection_direction = reflect(sun.direction, N);
+
+    if (sun.color == vec3(0)) return vec3(1);
 
     vec3 ambient  = sun.color * 0.2; // Brightness where no light hits
     vec3 diffuse  = sun.color * max(dot(N, -sun.direction), 0);

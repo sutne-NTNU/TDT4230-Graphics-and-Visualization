@@ -9,8 +9,6 @@
 #include <glm/glm.hpp>
 
 #include "options.hpp"
-#include "utilities/cubemap.hpp"
-#include "window.hpp"
 
 
 /**
@@ -36,9 +34,9 @@ public:
         // Create the cubemap texture the framebuffer will render to
         glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-        for (GLenum side : CUBEMAP::sides)
+        for (unsigned int i = 0; i < 6; i++)
         {
-            glTexImage2D(side, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, size, size, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
         }
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -82,7 +80,7 @@ public:
     void selectRenderTargetSide(unsigned int side)
     {
         // we have to update to the correct cubemap texture, otherwise they would all render to the same side (right)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, CUBEMAP::sides[side], textureID, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, textureID, 0);
         // Clear this side of the cubemap before rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
@@ -107,5 +105,30 @@ private:
         assert(("Framebuffer is not okay", false));
     }
 };
+
+
+
+namespace CubemapDirections
+{
+    // Viewing direction to look at each face
+    const std::vector<glm::vec3> view = {
+        glm::vec3(1, 0, 0),  // right
+        glm::vec3(-1, 0, 0), // left
+        glm::vec3(0, 1, 0),  // top
+        glm::vec3(0, -1, 0), // bottom
+        glm::vec3(0, 0, 1),  // front
+        glm::vec3(0, 0, -1)  // back
+    };
+
+    // Use up vectors to rotate faces correctly
+    const std::vector<glm::vec3> up = {
+        glm::vec3(0, -1, 0), // right
+        glm::vec3(0, -1, 0), // left
+        glm::vec3(0, 0, 1),  // top
+        glm::vec3(0, 0, -1), // bottom
+        glm::vec3(0, -1, 0), // front
+        glm::vec3(0, -1, 0)  // back
+    };
+}
 
 #endif

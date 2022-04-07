@@ -10,9 +10,9 @@
 
 struct Texture
 {
-    unsigned int colorID     = -1;
-    unsigned int normalID    = -1;
-    unsigned int roughnessID = -1;
+    int colorID     = -1;
+    int normalID    = -1;
+    int roughnessID = -1;
 };
 
 
@@ -45,65 +45,65 @@ struct Appearance
 
 const Appearance GLASS = {
     glm::vec3(0, 0, 1), // color
-    0.95,               // opacity
-    0.1,                // roughness
-    1.53,               // refraction index
-    0.2,                // reflectivity
+    0.95f,              // opacity
+    0.1f,               // roughness
+    1.53f,              // refraction index
+    0.2f,               // reflectivity
     false,              // useTextureMap
 };
 
 const Appearance CHROME = {
     glm::vec3(0.25, 0.25, 0.25), // color
-    0.0,                         // opacity
-    0.1,                         // roughness
-    1.0,                         // refraction index
-    1.0,                         // reflectivity
+    0.0f,                        // opacity
+    0.1f,                        // roughness
+    1.0f,                        // refraction index
+    1.0f,                        // reflectivity
     false,                       // useTextureMap
 };
 
 const Appearance MATTE_RED = {
     glm::vec3(0.8, 0.1, 0.1), // color
-    0.0,                      // opacity
-    0.7,                      // roughness
-    1.0,                      // refraction index
-    0.0,                      // reflectivity
+    0.0f,                     // opacity
+    0.7f,                     // roughness
+    1.0f,                     // refraction index
+    0.0f,                     // reflectivity
     false,                    // useTextureMap
 };
 
 const Appearance MATTE_GREEN = {
     glm::vec3(0.1, 0.8, 0.1), // color
-    0.0,                      // opacity
-    0.7,                      // roughness
-    1.0,                      // refraction index
-    0.0,                      // reflectivity
+    0.0f,                     // opacity
+    0.7f,                     // roughness
+    1.0f,                     // refraction index
+    0.0f,                     // reflectivity
     false,                    // useTextureMap
 };
 
 const Appearance MATTE_BLUE = {
     glm::vec3(0.1, 0.1, 0.8), // color
-    0.0,                      // opacity
-    0.7,                      // roughness
-    1.0,                      // refraction index
-    0.0,                      // reflectivity
+    0.0f,                     // opacity
+    0.7f,                     // roughness
+    1.0f,                     // refraction index
+    0.0f,                     // reflectivity
     false,                    // useTextureMap
 };
 
 
 const Appearance MATTE_WHITE = {
     glm::vec3(1, 1, 1), // color
-    0.0,                // opacity
-    10,                 // roughness
-    1.0,                // refraction index
-    0.0,                // reflectivity
+    0.0f,               // opacity
+    10.0f,              // roughness
+    1.0f,               // refraction index
+    0.0f,               // reflectivity
     false,              // useTextureMap
 };
 
 const Appearance SHINY_WHITE = {
     glm::vec3(1, 1, 1), // color
-    0.0,                // opacity
-    0.0,                // roughness
-    1.0,                // refraction index
-    0.0,                // reflectivity
+    0.0f,               // opacity
+    0.0f,               // roughness
+    1.0f,               // refraction index
+    0.0f,               // reflectivity
     false,              // useTextureMap
 };
 
