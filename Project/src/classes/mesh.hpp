@@ -43,7 +43,7 @@ public:
     Mesh(std::string const &filename, std::string const &root = "../res/models/")
     {
         std::string file = root + filename;
-        cgltf_data *data = readData(file);
+        cgltf_data *data = readData(file.c_str());
         loadData(data);
         free(data);
         if (OPTIONS::verbose) printf("Loaded mesh:  %s\t Vertices: %i Indices: %i\n", file.c_str(), vertices.size(), indices.size());
@@ -112,15 +112,15 @@ public:
 
 
 private: // Helper methods to load mesh from a .gltf file
-    cgltf_data *readData(std::string const &file)
+    cgltf_data *readData(const char *file)
     {
-        std::ifstream fd(file.c_str());
+        std::ifstream fd(file);
         if (fd.fail())
         {
             fprintf(stderr,
                     "Something went wrong when loading model at \"%s\".\n"
                     "The file may not exist or is currently inaccessible.\n",
-                    file.c_str());
+                    file);
             return nullptr;
         }
 
@@ -128,13 +128,13 @@ private: // Helper methods to load mesh from a .gltf file
         memset(&options, 0, sizeof(cgltf_options));
         cgltf_data *data = NULL;
 
-        cgltf_result result = cgltf_parse_file(&options, file.c_str(), &data);
+        cgltf_result result = cgltf_parse_file(&options, file, &data);
         if (result != cgltf_result_success)
         {
             printf("Failed to parse glTF file: %s\n", file);
             return nullptr;
         }
-        result = cgltf_load_buffers(&options, data, file.c_str());
+        result = cgltf_load_buffers(&options, data, file);
         if (result != cgltf_result_success)
         {
             cgltf_free(data);
