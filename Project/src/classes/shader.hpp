@@ -24,6 +24,11 @@ namespace UNIFORMS
     const int V = 2;
     const int P = 3;
     const int N = 4;
+
+    const int camera_position    = 10;
+    const int has_textures       = 11;
+    const int sunlight_color     = 12;
+    const int sunlight_direction = 13;
 }
 
 // Texture bindings in fragment shader
@@ -33,8 +38,6 @@ namespace BINDINGS
     const int texture_map   = 1;
     const int normal_map    = 2;
     const int roughness_map = 3;
-
-    const int reflection_cubemap = 10;
 }
 
 
@@ -85,32 +88,9 @@ public:
         return mProgram;
     }
 
-
-    /**
-     * @brief Get a uniforms ID from a string containing its name
-     *
-     * @param uniformName name of the uniform
-     * @return GLint - the location of the uniform
-     */
-    GLint getUniformLocation(std::string const &uniformName)
-    {
-        GLint location = glGetUniformLocation(mProgram, uniformName.c_str());
-        return location; // Location is -1 if name is invalid OR the uniform isnt used
-    }
-
     /*
      * Some more convenience funstions so i dont have to think about what gl function and type each uniform is
      */
-
-
-    template <typename T>
-    void setUniform(std::string const &uniformName, T value)
-    {
-        GLint location = getUniformLocation(uniformName);
-        if (location == -1) return;
-        setUniform(location, value);
-    }
-
 
     void setUniform(unsigned int location, int value) { glUniform1i(location, value); }
     void setUniform(unsigned int location, bool value) { glUniform1i(location, value); }

@@ -67,6 +67,14 @@ public:
         glViewport(0, 0, size, size);                       // update viewport
     }
 
+    // Render to default (screen) framebuffer
+    static void activateScreen()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);               // unbind framebuffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
+        glViewport(0, 0, WINDOW::width, WINDOW::height);
+    }
+
     // draw to the given cubemap textures side:
     //
     //      0 = GL_TEXTURE_CUBE_MAP_POSITIVE_X / right
@@ -83,14 +91,6 @@ public:
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + side, textureID, 0);
         // Clear this side of the cubemap before rendering
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    // Render to default (screen) framebuffer
-    static void activateScreen()
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);               // unbind framebuffer
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
-        glViewport(0, 0, WINDOW::width, WINDOW::height);
     }
 
 

@@ -186,21 +186,21 @@ void renderNode(SceneNode *node, glm::mat4 view, glm::mat4 projection, glm::vec3
         shader->setUniform(UNIFORMS::V, view);
         shader->setUniform(UNIFORMS::P, projection);
         shader->setUniform(UNIFORMS::N, node->N);
-        shader->setUniform("camera_position", cameraPos);
-        shader->setUniform("sunlight_color", skyboxManager->getSunColor());
-        shader->setUniform("sunlight_direction", skyboxManager->getSunDirection());
+        shader->setUniform(UNIFORMS::camera_position, cameraPos);
+        shader->setUniform(UNIFORMS::sunlight_color, skyboxManager->getSunColor());
+        shader->setUniform(UNIFORMS::sunlight_direction, skyboxManager->getSunDirection());
 
         // let the shader know if it can use textures or not
         if (node->textures.hasTextures)
         {
-            shader->setUniform("has_textures", true);
+            shader->setUniform(UNIFORMS::has_textures, true);
             glBindTextureUnit(BINDINGS::texture_map, node->textures.colorID);
             glBindTextureUnit(BINDINGS::normal_map, node->textures.normalID);
             glBindTextureUnit(BINDINGS::roughness_map, node->textures.roughnessID);
         }
         else
         {
-            shader->setUniform("has_textures", false);
+            shader->setUniform(UNIFORMS::has_textures, true);
         }
         // Finally render the node
         node->render();
@@ -269,7 +269,7 @@ void renderReflectionStep(GLFWwindow *window)
         skyboxManager->render();
         renderNode(root, view, projection, node->position);
     }
-    glBindTextureUnit(BINDINGS::reflection_cubemap, node->reflectionBuffer->textureID);
+    glBindTextureUnit(BINDINGS::skybox, node->reflectionBuffer->textureID);
     // }
 }
 

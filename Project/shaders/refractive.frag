@@ -7,8 +7,8 @@ in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
 // Uniforms
-uniform vec3 camera_position;
-uniform bool has_textures;
+uniform layout(location = 10) vec3 camera_position;
+uniform layout(location = 11) bool has_textures;
 
 // Textures
 uniform layout(binding = 0) samplerCube skybox;

@@ -7,10 +7,10 @@ in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
 // Uniforms
-uniform vec3 camera_position;
-uniform vec3 sunlight_color;
-uniform vec3 sunlight_direction;
-uniform bool has_textures;
+uniform layout(location = 10) vec3 camera_position;
+uniform layout(location = 11) bool has_textures;
+uniform layout(location = 12) vec3 sunlight_color;
+uniform layout(location = 13) vec3 sunlight_direction;
 
 // Textures
 uniform layout(binding = 1) sampler2D color_map;
