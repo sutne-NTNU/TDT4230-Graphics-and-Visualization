@@ -24,7 +24,7 @@ namespace OPTIONS
         DEMO   // load everything with highest-res textures
     };
 
-    const MODE mode    = TEST;
+    const MODE mode    = DEBUG;
     const bool verbose = true;
 }
 

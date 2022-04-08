@@ -14,11 +14,15 @@ class SkyboxManager
 private:
     int activeSkyboxIndex;
     std::vector<Skybox> skyboxes;
+    glm::mat4 V; // View Matrix
+    glm::mat4 P; // Projection Matrix
+    Shader *skyboxShader;
 
 public:
-    SkyboxManager()
+    SkyboxManager(Shader *skyboxShader)
     {
-        activeSkyboxIndex = 0;
+        this->skyboxShader = skyboxShader;
+        activeSkyboxIndex  = 0;
         if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 2;
 
         skyboxes.push_back(Skybox(
@@ -42,11 +46,7 @@ public:
             ));
     }
 
-    // Removes the translation from the view matrix and save VP for drawing later
-    void updateVP(glm::mat4 view, glm::mat4 projection)
-    {
-        skyboxes[activeSkyboxIndex].updateVP(view, projection);
-    }
+
 
     glm::vec3 getSunDirection()
     {
@@ -58,14 +58,24 @@ public:
         return skyboxes[activeSkyboxIndex].sunlightColor;
     }
 
-    void swapCubemap()
+    void swapSkybox()
     {
         activeSkyboxIndex = (activeSkyboxIndex + 1) % skyboxes.size();
     }
 
-    void render(Gloom::Shader *shader)
+    // Removes the translation from the view matrix and save V + P for rendering later
+    void updateMatrices(glm::mat4 view, glm::mat4 projection)
     {
-        skyboxes[activeSkyboxIndex].render(shader);
+        V = glm::mat4(glm::mat3(view));
+        P = projection;
+    }
+
+    void render()
+    {
+        skyboxShader->activate();
+        skyboxShader->setUniform(UNIFORMS::V, V);
+        skyboxShader->setUniform(UNIFORMS::P, P);
+        skyboxes[activeSkyboxIndex].render();
     }
 };
 

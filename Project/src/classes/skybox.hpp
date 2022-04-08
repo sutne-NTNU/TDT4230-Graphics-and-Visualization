@@ -25,7 +25,7 @@ public:
     unsigned int textureID;
     glm::vec3 sunlightDirection;
     glm::vec3 sunlightColor;
-    glm::mat4 VP; // custom view projection matrix that removes the translation component of the view matrix
+
 
     /**
      * @brief loads a cubemap texture from 6 different images.
@@ -105,20 +105,12 @@ public:
     }
 
 
-    // Removes the translation from the view matrix and save VP for drawing later
-    void updateVP(glm::mat4 view, glm::mat4 projection)
-    {
-        VP = projection * glm::mat4(glm::mat3(view));
-    }
 
-
-    void render(Gloom::Shader *shader)
+    void render()
     {
-        shader->setUniform(UNIFORMS::TYPE, UNIFORM_FLAGS::SKYBOX);
-        shader->setUniform(UNIFORMS::MVP, VP);
         glDepthMask(GL_FALSE);
         glBindVertexArray(vaoID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+        glBindTextureUnit(BINDINGS::skybox, textureID);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);
     }
