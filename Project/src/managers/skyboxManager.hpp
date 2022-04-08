@@ -14,8 +14,6 @@ class SkyboxManager
 private:
     int activeSkyboxIndex;
     std::vector<Skybox> skyboxes;
-    glm::mat4 V; // View Matrix
-    glm::mat4 P; // Projection Matrix
     Shader *skyboxShader;
 
 public:
@@ -23,12 +21,12 @@ public:
     {
         this->skyboxShader = skyboxShader;
         activeSkyboxIndex  = 0;
-        if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 2;
+        if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 1;
 
         skyboxes.push_back(Skybox(
             "forest", ".png",                         // Images
             glm::vec3(0.529871, -0.340380, 0.776775), // Sunlight Direction
-            glm::vec3(0.98, 0.97, 0.78)               // Sunlight Color
+            glm::vec3(0.98, 0.97, 0.88)               // Sunlight Color
             ));
 
         if (OPTIONS::mode == OPTIONS::DEBUG) return; // Dont load the other skyboxes in debug mode
@@ -58,23 +56,27 @@ public:
         return skyboxes[activeSkyboxIndex].sunlightColor;
     }
 
+    unsigned int getTextureID()
+    {
+        return skyboxes[activeSkyboxIndex].textureID;
+    }
+
     void swapSkybox()
     {
         activeSkyboxIndex = (activeSkyboxIndex + 1) % skyboxes.size();
     }
 
-    // Removes the translation from the view matrix and save V + P for rendering later
-    void updateMatrices(glm::mat4 view, glm::mat4 projection)
-    {
-        V = glm::mat4(glm::mat3(view));
-        P = projection;
-    }
-
-    void render()
+    /**
+     * @brief Renders the current skybox using the given view and projection matrices
+     *
+     * @param view View Matrix
+     * @param projection Projection Matrix
+     */
+    void render(glm::mat4 view, glm::mat4 projection)
     {
         skyboxShader->activate();
-        skyboxShader->setUniform(UNIFORMS::V, V);
-        skyboxShader->setUniform(UNIFORMS::P, P);
+        skyboxShader->setUniform(UNIFORMS::V, glm::mat4(glm::mat3(view)));
+        skyboxShader->setUniform(UNIFORMS::P, projection);
         skyboxes[activeSkyboxIndex].render();
     }
 };

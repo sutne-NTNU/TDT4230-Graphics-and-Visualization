@@ -7,8 +7,8 @@ in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
 // Uniforms
-uniform layout(location = 10) vec3 camera_position;
-uniform layout(location = 11) bool has_textures;
+uniform layout(location = 10) bool has_textures;
+uniform layout(location = 11) vec3 camera_position;
 uniform layout(location = 12) vec3 sunlight_color;
 uniform layout(location = 13) vec3 sunlight_direction;
 
@@ -43,13 +43,14 @@ void main()
 {
     vec3 normal     = normalize(in_normal);
     vec3 color      = vec3(0.99, 0.37, 0.37);
-    float roughness = 0.9;
+    float roughness = 0.4;
 
     if (has_textures)
     {
-        normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
-        roughness = texture(roughness_map, in_texture_coordinates).x;
-        color     = texture(color_map, in_texture_coordinates).rgb;
+        // normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
+        // color     = texture(color_map, in_texture_coordinates).rgb;
+        // roughness = texture(roughness_map, in_texture_coordinates).x;
     }
+
     fragment_color = vec4(color * sunlight(normal, roughness), 1);
 }

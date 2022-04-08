@@ -7,8 +7,8 @@ in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
 // uniforms
-uniform layout(location = 10) vec3 camera_position;
-uniform layout(location = 11) bool has_textures;
+uniform layout(location = 10) bool has_textures;
+uniform layout(location = 11) vec3 camera_position;
 
 // Textures
 uniform layout(binding = 0) samplerCube skybox;
@@ -40,7 +40,7 @@ void main()
 
     if (has_textures)
     {
-        normal = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
+        // normal = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
     }
 
     fragment_color = vec4(get_reflection(normal), 1);

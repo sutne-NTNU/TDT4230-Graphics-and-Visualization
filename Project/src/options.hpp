@@ -21,11 +21,15 @@ namespace OPTIONS
     {
         DEBUG, // load less resources (fewer skyboxes)
         TEST,  // load everything but still low resolution textures
-        DEMO   // load everything with highest-res textures
+        DEMO,  // load everything with highest-res textures
     };
 
-    const MODE mode    = DEBUG;
-    const bool verbose = true;
+    const MODE mode     = DEBUG;
+    const bool verbose  = true;
+    const bool limitFPS = true;
+    const int fpsLimit  = 60;
+
+    const int environmentBufferResolution = mode == DEBUG ? 100 : 1000;
 }
 
 #endif

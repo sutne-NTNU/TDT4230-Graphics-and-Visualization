@@ -17,4 +17,6 @@ namespace UTILS
     glm::mat4 getPerspectiveMatrix(float FOV);
     glm::vec3 sphereCoordinates(float radius, int slice, int slices, int layer, int layers);
     void takeScreenshot(GLFWwindow *window);
+    void print(std::string desc, glm::vec3 vec);
+    // void showFramebufferContent(Framebuffer frambuffer);
 }

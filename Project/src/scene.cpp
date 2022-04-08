@@ -33,6 +33,8 @@ Keyboard *keyboard;
 SkyboxManager *skyboxManager;
 ShaderManager *shaderManager;
 
+Framebuffer *backsideNormalBuffer;
+
 SceneNode *root;
 SceneNode *shapes;
 SceneNode *bust;
@@ -52,7 +54,7 @@ const std::vector<AppearanceType> BUST_APPEARANCES = {
     REFRACTIVE,
 };
 
-float bustRotationSpeed = 15;
+float bustRotationSpeed = 0.0f;
 
 
 
@@ -77,7 +79,12 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
     {
         shapeAppearanceIndex = (shapeAppearanceIndex + 1) % SHAPE_APPEARANCES.size();
-        shapes->appearance   = SHAPE_APPEARANCES[shapeAppearanceIndex];
+        for (SceneNode *node : shapes->children) node->appearance = SHAPE_APPEARANCES[shapeAppearanceIndex];
+    }
+    if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+    {
+        camera->yaw += 90;
+        camera->updateCameraViewVectors();
     }
 }
 
@@ -95,10 +102,11 @@ void initScene(GLFWwindow *window)
     glfwSetCursorPosCallback(window, mouseCallback);
     glfwSetKeyCallback(window, keyboardCallback);
 
-    shaderManager = new ShaderManager();
-    skyboxManager = new SkyboxManager(new Shader("skybox.vert", "skybox.frag"));
-    keyboard      = new Keyboard();
-    camera        = new Camera(glm::vec3(0, 10, 50), -10.0);
+    shaderManager        = new ShaderManager();
+    skyboxManager        = new SkyboxManager(new Shader("skybox.vert", "skybox.frag"));
+    keyboard             = new Keyboard();
+    camera               = new Camera(glm::vec3(0, 0, 30));
+    backsideNormalBuffer = new Framebuffer(WINDOW::width, WINDOW::height);
 
     // Create And Inititalize Nodes and SceneGraph
     root = new SceneNode();
@@ -121,9 +129,8 @@ void initSceneGraph()
     //        / |
     //      +z  -y
 
-
     // Geometric Shapes
-    float size    = 6;
+    float size    = 10;
     float spacing = size * 1.5;
 
     shapes              = new SceneNode();
@@ -137,7 +144,6 @@ void initSceneGraph()
     sphere->position.x   = spacing * 0;
     cylinder->position.x = spacing * 2;
 
-    // Build SceneGraph
     root->addChild(shapes);
     shapes->addChild(pyramid);
     shapes->addChild(cube);
@@ -147,151 +153,192 @@ void initSceneGraph()
     // Rotating Bust
     std::string resolution = "1k";
     if (OPTIONS::mode == OPTIONS::DEMO) resolution = "4k";
-    bust = SceneNode::fromModelName("marble_bust", resolution);
+    bust = SceneNode::fromModelName("marble_bust", resolution, BUST_APPEARANCES[bustAppearanceIndex]);
 
     bust->setScale(100);
-    bust->translate(0, -25, 100);
+    bust->translate(0, -25, 85);
     bust->rotate(0, 180, 0);
-
     root->addChild(bust);
 }
 
 
 
-/** Executed At start of each new frame to update all positions and states */
-void updateState(GLFWwindow *window, float deltaTime)
+/**
+ * @brief Called before renderFrame(), and updates all objects in the scene
+ *
+ * @param deltaTime time (in seconds) since the previous frame was updated
+ */
+void updateState(float deltaTime)
 {
     camera->updatePosition(deltaTime, keyboard->keysCurrentlyPressed);
     bust->rotate(0, deltaTime * bustRotationSpeed, 0);
+
+    root->updateTransformations(glm::mat4(1));
 }
 
 
-
-/** Executed after the frame state has been updated */
-void renderFrame(GLFWwindow *window)
+void demoRender()
 {
-    // renderRefractionStep(window);
-    // renderReflectionStep(window);
-    renderFinal(window);
-    // renderContentsOf(framebuffers->refractionFramebuffer);
+    renderFrame();
 }
-
-void renderNode(SceneNode *node, glm::mat4 view, glm::mat4 projection, glm::vec3 cameraPos = camera->position)
-{
-    // get correct shader for this node
-    Shader *shader = shaderManager->getShaderFor(node);
-    if (shader != nullptr)
-    {
-        shader->setUniform(UNIFORMS::M, node->M);
-        shader->setUniform(UNIFORMS::V, view);
-        shader->setUniform(UNIFORMS::P, projection);
-        shader->setUniform(UNIFORMS::N, node->N);
-        shader->setUniform(UNIFORMS::camera_position, cameraPos);
-        shader->setUniform(UNIFORMS::sunlight_color, skyboxManager->getSunColor());
-        shader->setUniform(UNIFORMS::sunlight_direction, skyboxManager->getSunDirection());
-
-        // let the shader know if it can use textures or not
-        if (node->textures.hasTextures)
-        {
-            shader->setUniform(UNIFORMS::has_textures, true);
-            glBindTextureUnit(BINDINGS::texture_map, node->textures.colorID);
-            glBindTextureUnit(BINDINGS::normal_map, node->textures.normalID);
-            glBindTextureUnit(BINDINGS::roughness_map, node->textures.roughnessID);
-        }
-        else
-        {
-            shader->setUniform(UNIFORMS::has_textures, true);
-        }
-        // Finally render the node
-        node->render();
-    }
-    for (SceneNode *child : node->children) renderNode(child, view, projection, cameraPos);
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// lots of duplicate code here, but it's a lot easier to read what happens in each render-pass like this   //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-/*
- * For the "refraction" render-pass, we render the scene from the camera's point of view, but we are only
- * going to draw the normals of the "backside" of opaque objects. This will be saved to a texture and used later
- * to create the double refraction effect.
+/**
+ * @brief Called after the scene has been updated, renders the entier scene
  */
-void renderRefractionStep(GLFWwindow *window)
+void renderFrame()
 {
-    // // Calculate ViewProjection Matrix
-    // glm::mat4 projection = UTILS::getPerspectiveMatrix(90);
-    // glm::mat4 view       = camera->getViewMatrix();
+    // First we need to get accurate reflections and refractions for this frame for each node that needs it
+    for (SceneNode *node : root->getAllChildren())
+    {
+        if (node->appearance == REFLECTIVE || node->appearance == REFRACTIVE)
+        {
+            fillReflectionBuffer(node);
+        }
+    }
 
-    // // Update Transformation for SceneGraph
-    // root->updateTransformations(glm::mat4(1), projection * view);
+    // then we update the backside normals used for double refraction
+    updateBackSideNormals();
 
-    // shader->setUniform(UNIFORMS::PASS, UNIFORM_FLAGS::REFRACTION);
-    // shader->setUniform("camera.position", camera->getPosition());
-
-    // glCullFace(GL_FRONT);
-    // root->render(shader);
-    // glCullFace(GL_BACK);
-    // glBindTextureUnit(11, framebuffers->refractionFramebuffer.textureID);
+    // Once all buffers are filled, we can render the scene from the actual cameras perspective
+    glm::mat4 projection = UTILS::getPerspectiveMatrix(60);
+    glm::mat4 view       = UTILS::getViewMatrix(camera->position, camera->front, camera->up);
+    // Activate correct framebuffer
+    Framebuffer::activateScreen();
+    // Render The scene
+    skyboxManager->render(view, projection);
+    renderSceneGraph(view, projection, camera->position);
 }
+
 
 
 /**
- * For reflections the scene is rendered 6 times (at full scale) from the center of an object,
- * we then create a cubemap from these 6 textures that can bused to sample the reflections from
- * in the final render pass.
+ * @brief Renders the entire scene from the nodes perspective and stores it
+ * in the given node's dynamic cubemap for reflections
  */
-void renderReflectionStep(GLFWwindow *window)
+void fillReflectionBuffer(SceneNode *node)
 {
-    // for (SceneNode *node : root->getAllChildren())
-    // {
-    //     if (node->appearance.reflectivity == 0) continue;
-    SceneNode *node = root;
-    // Activate this nodes reflection framebuffer
-    node->reflectionBuffer->activate();
+    node->environmentBuffer->activate();
+
     for (unsigned int side = 0; side < 6; side++)
     {
-        // Update all transformations
         glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0);
         glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
 
-        skyboxManager->updateMatrices(view, projection);
-        root->updateTransformations(glm::mat4(1));
-
-        // Render to correct face of the cubemap
-        node->reflectionBuffer->selectRenderTargetSide(side);
+        node->environmentBuffer->selectRenderTargetSide(side);
 
         // Render Scene
-        skyboxManager->render();
-        renderNode(root, view, projection, node->position);
+        skyboxManager->render(view, projection);
+        renderSceneGraph(view, projection, node->position, node, SKIP);
     }
-    glBindTextureUnit(BINDINGS::skybox, node->reflectionBuffer->textureID);
-    // }
+    node->hasEnvironmentMap = true;
 }
 
 
 
 /**
- * The final render pass of the frame, using the textures we have created we can now
- * create a quite realistic "ray-traced" scene.
+ * @brief Renders the entire scene, but switches to front-face culling for this node to get accurate refractions for
+ * when light leaves the object.
  */
-void renderFinal(GLFWwindow *window)
+void updateBackSideNormals()
 {
-    // Update all transformations and matrices
+    // backsideNormalBuffer->activate();
+    Framebuffer::activateScreen();
+
+    // Same matrices as the camera
     glm::mat4 projection = UTILS::getPerspectiveMatrix(60);
     glm::mat4 view       = UTILS::getViewMatrix(camera->position, camera->front, camera->up);
 
-    skyboxManager->updateMatrices(view, projection);
-    root->updateTransformations(glm::mat4(1));
 
-    // Activate correct framebuffer
-    Framebuffer::activateScreen();
+    glCullFace(GL_FRONT);
+    for (SceneNode *node : root->getAllChildren())
+    {
+        if (node->appearance == REFRACTIVE)
+        {
+            renderNode(node, view, projection, camera->position, true);
+        }
+    }
+    glCullFace(GL_BACK);
+}
 
-    // Render Scene
-    skyboxManager->render();
-    renderNode(root, view, projection);
+
+
+/**
+ * @brief Render the given node with the given view, projection and camera position.
+ * The method sets all uniform values and renders the node's mesh.
+ *
+ * @param node
+ * @param view
+ * @param projection
+ * @param cameraPos
+ * @param flipNormals inverts the normals in the fragment shader (for exit refraction)
+ */
+void renderNode(
+    SceneNode *node,
+    glm::mat4 view,
+    glm::mat4 projection,
+    glm::vec3 cameraPos,
+    bool backSidePass)
+{
+    // get correct shader for this node
+    Shader *shader = shaderManager->getShaderFor(node);
+    if (shader == nullptr) return;
+
+    shader->activate();
+
+    shader->setUniform(UNIFORMS::M, node->M);
+    shader->setUniform(UNIFORMS::V, view);
+    shader->setUniform(UNIFORMS::P, projection);
+    shader->setUniform(UNIFORMS::N, node->N);
+    shader->setUniform(UNIFORMS::camera_position, cameraPos);
+    shader->setUniform(UNIFORMS::sunlight_color, skyboxManager->getSunColor());
+    shader->setUniform(UNIFORMS::sunlight_direction, skyboxManager->getSunDirection());
+    shader->setUniform(UNIFORMS::back_side_pass, backSidePass);
+
+    // let the shader know if it should use textures or not
+    shader->setUniform(UNIFORMS::has_textures, node->textures.hasTextures);
+    if (node->textures.hasTextures)
+    {
+        glBindTextureUnit(BINDINGS::texture_map, node->textures.colorID);
+        glBindTextureUnit(BINDINGS::normal_map, node->textures.normalID);
+        glBindTextureUnit(BINDINGS::roughness_map, node->textures.roughnessID);
+    }
+
+    // Set correct skybox depending upon wether this ndoe has a dynamic cubemap or not
+    glBindTextureUnit(BINDINGS::skybox, skyboxManager->getTextureID());
+    if (node->hasEnvironmentMap) glBindTextureUnit(BINDINGS::skybox, node->environmentBuffer->textureID);
+
+    // Set backside normals for refractive objects
+    glBindTextureUnit(BINDINGS::back_side_normal_map, backsideNormalBuffer->textureID);
+
+    // Finally render the nodes mesh
+    node->render();
+}
+
+
+
+/**
+ * @brief To make things a littel easier for myself im dithing the recursive rendering of the scenenodes.
+ * This enables me to render the entire scene, but treat a specific node in a particular way (e.g skip it, reverse it etc.);
+ *
+ * @param specialNode Node to treat differently than the rest of the scenegraph
+ * @param specialCase How should this special node be treated
+ */
+void renderSceneGraph(
+    glm::mat4 view,
+    glm::mat4 projection,
+    glm::vec3 cameraPosition,
+    SceneNode *specialNode,
+    SpecialRenderingCase specialCase)
+{
+    if (specialCase == NONE)
+    {
+        for (SceneNode *node : root->getAllChildren()) renderNode(node, view, projection, cameraPosition);
+    }
+
+    if (specialCase == SKIP)
+    {
+        for (SceneNode *node : root->getAllChildren())
+        {
+            if (node != specialNode) renderNode(node, view, projection, cameraPosition);
+        }
+    }
 }

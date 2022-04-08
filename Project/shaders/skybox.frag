@@ -4,7 +4,7 @@
 in layout(location = 1) vec3 in_fragment_position;
 
 // Textures
-uniform layout(binding = 0) samplerCube skybox;
+uniform samplerCube skybox;
 
 
 

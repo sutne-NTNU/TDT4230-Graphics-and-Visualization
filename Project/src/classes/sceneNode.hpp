@@ -36,8 +36,8 @@ struct Textures
 
 struct VAO
 {
-    unsigned int ID         = 0;
-    unsigned int indexCount = 0;
+    int ID         = -1;
+    int indexCount = -1;
 };
 
 
@@ -65,9 +65,8 @@ public:
     VAO vao;
 
     // Framebuffer used to store the dynamic reflection cubemap for this specific node
-    Framebuffer *reflectionBuffer;
-    // Framebuffer used to store the dynamic refraction cubemap for this specific node
-    Framebuffer *refractionBuffer;
+    Framebuffer *environmentBuffer;
+    bool hasEnvironmentMap = false;
 
     // How the node should be render
     AppearanceType appearance;
@@ -81,8 +80,7 @@ public:
         scale          = glm::vec3(1, 1, 1);
         referencePoint = glm::vec3(0, 0, 0);
 
-        reflectionBuffer = new Framebuffer(100);
-        refractionBuffer = new Framebuffer(100);
+        environmentBuffer = new Framebuffer(OPTIONS::environmentBufferResolution);
     }
 
     /** Initializes a SceneNode with VAO and VAI index count from a mesh */
@@ -92,6 +90,7 @@ public:
         node->vao.ID         = generateBuffer(mesh);
         node->vao.indexCount = mesh.indices.size();
         node->appearance     = appearance;
+        if (OPTIONS::verbose) printf("Created SceneNode with %d vertices\n", node->vao.indexCount);
         return node;
     }
 
@@ -104,7 +103,7 @@ public:
      *      ../res/models/<name>/textures/<name>_01_nor_gl_<resolution>.png
      *      ../res/models/<name>/textures/<name>_01_rough_<resolution>.png
      */
-    static SceneNode *fromModelName(const std::string &name, const std::string &resolution)
+    static SceneNode *fromModelName(const std::string &name, const std::string &resolution, AppearanceType appearance)
     {
         std::string modelName     = name + "/" + name + "_01_" + resolution + ".gltf";
         std::string diffuseName   = name + "/textures/" + name + "_01_diff_" + resolution + ".png";
@@ -112,7 +111,7 @@ public:
         std::string roughnessName = name + "/textures/" + name + "_01_rough_" + resolution + ".png";
 
         Mesh mesh       = Mesh(modelName);
-        SceneNode *node = fromMesh(mesh, TEXTURED);
+        SceneNode *node = fromMesh(mesh, appearance);
         addTextureMaps(node, diffuseName, normalName, roughnessName);
         return node;
     }
@@ -147,13 +146,11 @@ public:
     // Render this nodes vertices, all uniforms must be set before this is called
     void render()
     {
-        bool isRenderable = vao.ID != -1;
-        if (isRenderable)
-        {
-            // Bind this nodes vertices and draw them
-            glBindVertexArray(vao.ID);
-            glDrawElements(GL_TRIANGLES, vao.indexCount, GL_UNSIGNED_INT, nullptr);
-        }
+        if (vao.ID == -1) return;
+
+        // Bind this nodes vertices and draw them
+        glBindVertexArray(vao.ID);
+        glDrawElements(GL_TRIANGLES, vao.indexCount, GL_UNSIGNED_INT, nullptr);
     }
 
 

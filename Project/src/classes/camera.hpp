@@ -89,7 +89,7 @@ public:
         MovementSpeed    = 30;
     }
 
-private:
+
     void updateCameraViewVectors()
     {
         glm::vec3 newFront = glm::vec3(

@@ -82,4 +82,29 @@ namespace UTILS
         // Save image to file
         Image::write("screenshot " + timestamp + ".png", width, height, pixels);
     }
+
+    void print(std::string desc, glm::vec3 vec)
+    {
+        std::cout << desc << ": (" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
+    }
+
+    // void showFrameBufferContent(Framebuffer frambeuffer)
+    // {
+    //     Mesh mesh = Mesh();
+
+    //     mesh.addQuad(
+    //         glm::vec3(-1.0f, -1.0f, 0.0f),
+    //         glm::vec3(1.0f, -1.0f, 0.0f),
+    //         glm::vec3(1.0f, 1.0f, 0.0f),
+    //         glm::vec3(-1.0f, 1.0f, 0.0f));
+
+    //     mesh.textureCoordinates = {
+    //         glm::vec2(0.0f, 0.0f),
+    //         glm::vec2(0.0f, 1.0f),
+    //         glm::vec2(1.0f, 1.0f),
+    //         glm::vec2(1.0f, 0.0f)
+    //     };
+
+
+    // }
 }

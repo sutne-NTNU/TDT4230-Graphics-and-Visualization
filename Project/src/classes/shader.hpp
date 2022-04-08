@@ -17,7 +17,7 @@
 #include <glm/vec3.hpp>
 
 
-// The location of all uniforms not fetched by name
+// The location of all uniforms in all shaders
 namespace UNIFORMS
 {
     const int M = 1;
@@ -25,19 +25,21 @@ namespace UNIFORMS
     const int P = 3;
     const int N = 4;
 
-    const int camera_position    = 10;
-    const int has_textures       = 11;
+    const int has_textures       = 10;
+    const int camera_position    = 11;
     const int sunlight_color     = 12;
     const int sunlight_direction = 13;
+    const int back_side_pass     = 14;
 }
 
 // Texture bindings in fragment shader
 namespace BINDINGS
 {
-    const int skybox        = 0;
-    const int texture_map   = 1;
-    const int normal_map    = 2;
-    const int roughness_map = 3;
+    const int skybox               = 0;
+    const int texture_map          = 1;
+    const int normal_map           = 2;
+    const int roughness_map        = 3;
+    const int back_side_normal_map = 4;
 }
 
 

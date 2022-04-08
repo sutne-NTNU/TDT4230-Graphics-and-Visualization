@@ -11,7 +11,7 @@
 
 
 
-// Very basic shader manager that contains all the available shaders (except the skybox one, that manages itself)
+// Very basic shader manager that contains all the available shaders (except the skybox one, which manages itself)
 // and allows switching between them dynamically
 class ShaderManager
 {
@@ -53,10 +53,6 @@ public:
             default:
                 return nullptr;
         }
-        // Check if this shader is already bound and activate it if it isnt
-        GLint prog = 0;
-        glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
-        if (prog != shader->getProgram()) shader->activate();
         return shader;
     }
 };

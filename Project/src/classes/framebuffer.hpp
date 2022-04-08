@@ -21,9 +21,12 @@ public:
     unsigned int textureID;
     unsigned int depthID;
 
-    unsigned int size;
+    unsigned int width;
+    unsigned int height;
 
     /**
+     * @brief Cubemap Framefuffer
+     *
      * @param size height and width of the cube, affects the resoultion of the cubemap
      */
     Framebuffer(unsigned int size)
@@ -56,15 +59,49 @@ public:
 
         checkFramebufferStatus("Creating Cubemap Framebuffer Failed");
         Framebuffer::activateScreen(); // Revert to screen framebuffer after creation
-        this->size = size;
+        this->width  = size;
+        this->height = size;
     }
+
+    /**
+     * @brief Single Texture Framebuffer
+     */
+    Framebuffer(unsigned int width, unsigned int height)
+    {
+        // Create the framebuffer
+        glGenFramebuffers(1, &ID);
+
+        // Create the cubemap texture the framebuffer will render to
+        glGenTextures(1, &textureID);
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // Create the depth render buffer
+        glGenRenderbuffers(1, &depthID);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthID);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+
+        // Bind parts togther
+        glBindFramebuffer(GL_FRAMEBUFFER, ID); // activate this framebuffer, and attach texture and depth buffer to it
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, ID);
+
+        checkFramebufferStatus("Creating Framebuffer Failed");
+        Framebuffer::activateScreen(); // Revert to screen framebuffer after creation
+        this->width  = width;
+        this->height = height;
+    }
+
+
 
     // Render to this framebuffer
     void activate()
     {
         glBindFramebuffer(GL_FRAMEBUFFER, ID);              // activate this framebuffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the buffers
-        glViewport(0, 0, size, size);                       // update viewport
+        glViewport(0, 0, width, height);                    // update viewport
     }
 
     // Render to default (screen) framebuffer
