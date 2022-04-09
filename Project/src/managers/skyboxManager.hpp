@@ -46,12 +46,12 @@ public:
 
 
 
-    glm::vec3 getSunDirection()
+    glm::vec3 getSunlightDirection()
     {
         return skyboxes[activeSkyboxIndex].sunlightDirection;
     }
 
-    glm::vec3 getSunColor()
+    glm::vec3 getSunlightColor()
     {
         return skyboxes[activeSkyboxIndex].sunlightColor;
     }

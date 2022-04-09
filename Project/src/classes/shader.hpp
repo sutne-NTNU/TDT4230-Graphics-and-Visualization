@@ -17,7 +17,7 @@
 #include <glm/vec3.hpp>
 
 
-// The location of all uniforms in all shaders
+// The locations of all uniforms in all shaders
 namespace UNIFORMS
 {
     const int M = 1;
@@ -29,17 +29,15 @@ namespace UNIFORMS
     const int camera_position    = 11;
     const int sunlight_color     = 12;
     const int sunlight_direction = 13;
-    const int back_side_pass     = 14;
 }
 
-// Texture bindings in fragment shader
+// Texture bindings in fragment shaders
 namespace BINDINGS
 {
-    const int skybox               = 0;
-    const int texture_map          = 1;
-    const int normal_map           = 2;
-    const int roughness_map        = 3;
-    const int back_side_normal_map = 4;
+    const int skybox        = 0;
+    const int diffuse_map   = 1;
+    const int normal_map    = 2;
+    const int roughness_map = 3;
 }
 
 
@@ -47,9 +45,7 @@ namespace BINDINGS
 class Shader
 {
 private:
-    GLuint mProgram;
-    GLint mStatus;
-    GLint mLength;
+    GLuint program;
 
 public:
     /**
@@ -63,7 +59,7 @@ public:
            std::string const &fragmentFilename,
            std::string const &root = "../shaders/")
     {
-        mProgram = glCreateProgram();
+        program = glCreateProgram();
 
         attach(root + vertexFilename);
         attach(root + fragmentFilename);
@@ -72,32 +68,21 @@ public:
 
     void activate()
     {
-        glUseProgram(mProgram);
-    }
-
-    void deactivate()
-    {
-        glUseProgram(0);
-    }
-
-    void destroy()
-    {
-        glDeleteProgram(mProgram);
+        glUseProgram(program);
     }
 
     GLint getProgram()
     {
-        return mProgram;
+        return program;
     }
 
     /*
-     * Some more convenience funstions so i dont have to think about what gl function and type each uniform is
+     * Some more convenience functions so i dont have to think about what gl function and type each uniform is
      */
 
     void setUniform(unsigned int location, int value) { glUniform1i(location, value); }
     void setUniform(unsigned int location, bool value) { glUniform1i(location, value); }
     void setUniform(unsigned int location, float value) { glUniform1f(location, value); }
-    void setUniform(unsigned int location, double value) { glUniform1f(location, value); }
     void setUniform(unsigned int location, unsigned int value) { glUniform1i(location, value); }
     void setUniform(unsigned int location, glm::vec2 value) { glUniform2fv(location, 1, glm::value_ptr(value)); }
     void setUniform(unsigned int location, glm::vec3 value) { glUniform3fv(location, 1, glm::value_ptr(value)); }
@@ -111,6 +96,9 @@ private:
     // Disable copying and assignment
     Shader(Shader const &) = delete;
     Shader &operator=(Shader const &) = delete;
+
+    GLint mStatus;
+    GLint mLength;
 
     /* Helper function for creating shaders */
     GLuint create(std::string const &filename)
@@ -163,7 +151,7 @@ private:
         assert(mStatus);
 
         // Attach shader and free allocated memory
-        glAttachShader(mProgram, shader);
+        glAttachShader(program, shader);
         glDeleteShader(shader);
     }
 
@@ -171,15 +159,15 @@ private:
     void link()
     {
         // Link all attached shaders
-        glLinkProgram(mProgram);
+        glLinkProgram(program);
 
         // Display errors
-        glGetProgramiv(mProgram, GL_LINK_STATUS, &mStatus);
+        glGetProgramiv(program, GL_LINK_STATUS, &mStatus);
         if (!mStatus)
         {
-            glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, &mLength);
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &mLength);
             std::unique_ptr<char[]> buffer(new char[mLength]);
-            glGetProgramInfoLog(mProgram, mLength, nullptr, buffer.get());
+            glGetProgramInfoLog(program, mLength, nullptr, buffer.get());
             fprintf(stderr, "%s\n", buffer.get());
         }
 
@@ -191,15 +179,15 @@ private:
     bool isValid()
     {
         // Validate linked shader program
-        glValidateProgram(mProgram);
+        glValidateProgram(program);
 
         // Display errors
-        glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &mStatus);
+        glGetProgramiv(program, GL_VALIDATE_STATUS, &mStatus);
         if (mStatus) return true;
 
-        glGetProgramiv(mProgram, GL_INFO_LOG_LENGTH, &mLength);
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &mLength);
         std::unique_ptr<char[]> buffer(new char[mLength]);
-        glGetProgramInfoLog(mProgram, mLength, nullptr, buffer.get());
+        glGetProgramInfoLog(program, mLength, nullptr, buffer.get());
         fprintf(stderr, "%s\n", buffer.get());
         return false;
     }

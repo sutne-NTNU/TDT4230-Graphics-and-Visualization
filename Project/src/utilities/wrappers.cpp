@@ -7,6 +7,8 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
+
+
 namespace STB
 {
 
@@ -20,9 +22,4 @@ namespace STB
         stbi_flip_vertically_on_write(true);
         stbi_write_png(filename, width, height, 4, data, 0);
     }
-}
-
-namespace CGLTF
-{
-
 }

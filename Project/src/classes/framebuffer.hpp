@@ -64,8 +64,10 @@ public:
     }
 
     /**
-     * @brief Single Texture Framebuffer
+     * @brief Single Texture Framebuffer ()
      */
+    [[deprecated("was supposed to be used for back-side refraction, but didnt have time to fully implement it")]]
+
     Framebuffer(unsigned int width, unsigned int height)
     {
         // Create the framebuffer

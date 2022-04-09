@@ -1,12 +1,14 @@
 #version 460 core
 
-// In
-in layout(location = 1) vec3 in_fragment_position;
+
+
+// From Vertex Shader
+in layout(location = 1) vec3 in_position;
 in layout(location = 2) vec3 in_normal;
 in layout(location = 3) vec2 in_texture_coordinates;
 in layout(location = 4) mat3 TBN;
 
-// uniforms
+// Uniforms
 uniform layout(location = 10) bool has_textures;
 uniform layout(location = 11) vec3 camera_position;
 
@@ -14,7 +16,9 @@ uniform layout(location = 11) vec3 camera_position;
 uniform layout(binding = 0) samplerCube skybox;
 uniform layout(binding = 2) sampler2D normal_map;
 
-// Out
+
+
+// Output
 out vec4 fragment_color;
 
 
@@ -27,7 +31,7 @@ vec3 get_reflection(vec3 N)
     //       \ | /
     //        \|/
     //    ------------ surface
-    vec3 I = normalize(in_fragment_position - camera_position);
+    vec3 I = normalize(in_position - camera_position);
     vec3 R = reflect(I, N);
     return texture(skybox, R).rgb;
 }

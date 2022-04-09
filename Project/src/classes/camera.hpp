@@ -29,6 +29,8 @@ public:
     GLfloat pitch;
     GLfloat yaw;
 
+    float FOV = OPTIONS::cameraFOV;
+
     Camera(
         glm::vec3 startPosition = glm::vec3(0, 0, 0),
         float startPitch        = 0.0f,
@@ -58,6 +60,13 @@ public:
         if (pitch < -89.0f) pitch = -89.0f;
 
         updateCameraViewVectors();
+    }
+
+    void handleScroll(float yoffset)
+    {
+        float newFOV = FOV + 5 * yoffset;
+        if (newFOV < 1.0f || OPTIONS::cameraFOV < newFOV) return;
+        FOV = newFOV;
     }
 
     void updatePosition(GLfloat deltaTime, bool keyIsPressed[512])

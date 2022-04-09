@@ -8,9 +8,4 @@ namespace STB
     void write(const char *filename, int width, int height, void *data);
 }
 
-namespace CGLTF
-{
-
-}
-
 #endif

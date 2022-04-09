@@ -1,19 +1,21 @@
 #version 460 core
 
-// In
-in layout(location = 1) vec3 in_fragment_position;
+
+
+// From skybox.vert
+in layout(location = 1) vec3 in_position;
 
 // Textures
 uniform samplerCube skybox;
 
 
 
-// Out
+// Output
 out vec4 fragment_color;
 
 
 
 void main()
 {
-    fragment_color = texture(skybox, in_fragment_position);
+    fragment_color = texture(skybox, in_position);
 }

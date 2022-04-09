@@ -29,31 +29,17 @@ public:
     }
 
     /**
-     * @brief Finds the correct shader for the node, checks if the shader is already active and if not, activates it
+     * @brief Finds the correct shader for the node
      *
      * @param node The node that is going to be rendered next
      */
     Shader *getShaderFor(SceneNode *node)
     {
-        Shader *shader;
-        switch (node->appearance)
-        {
-            case REFLECTIVE:
-                shader = reflectionShader;
-                break;
-            case REFRACTIVE:
-                shader = refractionShader;
-                break;
-            case CLASSIC:
-                shader = sunlightShader;
-                break;
-            case TEXTURED:
-                shader = sunlightShader;
-                break;
-            default:
-                return nullptr;
-        }
-        return shader;
+        if (node->appearance == REFLECTIVE) return reflectionShader;
+        if (node->appearance == REFRACTIVE) return refractionShader;
+        if (node->appearance == CLASSIC) return sunlightShader;
+        if (node->appearance == TEXTURED) return sunlightShader;
+        return nullptr;
     }
 };
 

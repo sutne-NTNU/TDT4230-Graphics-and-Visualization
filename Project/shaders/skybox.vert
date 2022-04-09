@@ -1,12 +1,17 @@
 #version 460 core
 
-// In
+
+
+// Attributes
 in layout(location = 0) vec3 in_position;
 
+// Uniforms
 uniform layout(location = 2) mat4 V; // View Matrix
 uniform layout(location = 3) mat4 P; // Projection Matrix
 
-// Out
+
+
+// Output
 out layout(location = 1) vec3 out_fragment_position;
 
 

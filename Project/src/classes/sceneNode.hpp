@@ -29,7 +29,7 @@ enum AppearanceType
 struct Textures
 {
     bool hasTextures = false;
-    int colorID      = -1;
+    int diffuseID    = -1;
     int normalID     = -1;
     int roughnessID  = -1;
 };
@@ -58,13 +58,13 @@ public:
 
     // Transformation matrix representing the transformation of the node's location/rotation/scale
     glm::mat4 M;
-    // The Normal (Transformation) Matrix
+    // The Normal (Transformation) Matrix for this nodes normals
     glm::mat3 N;
 
     // Information about vertices for this node
     VAO vao;
 
-    // Framebuffer used to store the dynamic reflection cubemap for this specific node
+    // Framebuffer used to store the dynamic environment cubemap for this specific node
     Framebuffer *environmentBuffer;
     bool hasEnvironmentMap = false;
 
@@ -72,6 +72,8 @@ public:
     AppearanceType appearance;
     // Information about relevant textures (and if it has any)
     Textures textures;
+
+
 
     SceneNode()
     {
@@ -83,23 +85,27 @@ public:
         environmentBuffer = new Framebuffer(OPTIONS::environmentBufferResolution);
     }
 
+
+
     /** Initializes a SceneNode with VAO and VAI index count from a mesh */
     static SceneNode *fromMesh(Mesh mesh, AppearanceType appearance)
     {
         SceneNode *node      = new SceneNode();
         node->vao.ID         = generateBuffer(mesh);
-        node->vao.indexCount = mesh.indices.size();
+        node->vao.indexCount = (unsigned int)mesh.indices.size();
         node->appearance     = appearance;
-        if (OPTIONS::verbose) printf("Created SceneNode with %d vertices\n", node->vao.indexCount);
+        if (OPTIONS::verbose) printf("Created SceneNode with: %d indices, %d vertices\n", node->vao.indexCount, mesh.vertices.size());
         return node;
     }
 
+
+
     /**
-     * Convenience function thats very specific to just my models as they are all downloaded from the same source: Poly Haven
+     * Convenience function thats very specific to just my model as it downloaded from Poly Haven
      *
      * Create a model and textures it using the files:
      *      ../res/models/<name>/<name>_01_<resolution>.gltf
-     *      ..7res/models/<name>/textures/<name>_01_diff_<resolution>.png
+     *      ../res/models/<name>/textures/<name>_01_diff_<resolution>.png
      *      ../res/models/<name>/textures/<name>_01_nor_gl_<resolution>.png
      *      ../res/models/<name>/textures/<name>_01_rough_<resolution>.png
      */
@@ -117,14 +123,29 @@ public:
     }
 
 
+    void increaseEnvironmentResolution()
+    {
+        int newResolution = environmentBuffer->width * 2;
+        if (2048 < newResolution) return;
+        environmentBuffer = new Framebuffer(newResolution);
+        hasEnvironmentMap = false;
+    }
+
+    void decreaseEnvironmentResolution()
+    {
+        int newResolution = environmentBuffer->width / 2;
+        if (newResolution < 10) return;
+        environmentBuffer = new Framebuffer(newResolution);
+        hasEnvironmentMap = false;
+    }
+
 
     /**
      * @brief Updates all transformations for node and recursively for all its children
      *
-     * @param node
-     * @param M Model Transformation Matrix of this nodes parent
+     * @param parentModelMatrix Model Transformation Matrix of this nodes parent
      */
-    void updateTransformations(glm::mat4 M)
+    void updateTransformations(glm::mat4 parentModelMatrix)
     {
         glm::mat4 myTransformation = glm::translate(position)
                                    * glm::translate(referencePoint)
@@ -134,14 +155,12 @@ public:
                                    * glm::scale(scale)
                                    * glm::translate(-referencePoint);
 
-        this->M = M * myTransformation;
-        this->N = glm::mat3(glm::transpose(glm::inverse(this->M)));
+        M = parentModelMatrix * myTransformation;
+        N = glm::mat3(glm::transpose(glm::inverse(M)));
 
         // Update children
-        for (SceneNode *child : children) child->updateTransformations(this->M);
+        for (SceneNode *child : children) child->updateTransformations(M);
     }
-
-
 
     // Render this nodes vertices, all uniforms must be set before this is called
     void render()
@@ -152,8 +171,6 @@ public:
         glBindVertexArray(vao.ID);
         glDrawElements(GL_TRIANGLES, vao.indexCount, GL_UNSIGNED_INT, nullptr);
     }
-
-
 
     // Add a child node to its parent's list of children
     void addChild(SceneNode *child)
@@ -183,12 +200,9 @@ public:
     // Recursively find total amount of children bewlow this node
     unsigned int getNumChildren()
     {
-        unsigned int numChildren = children.size();
-        for (SceneNode *child : children)
-        {
-            numChildren += child->getNumChildren();
-        }
-        return numChildren;
+        size_t numChildren = children.size();
+        for (SceneNode *child : children) numChildren += child->getNumChildren();
+        return (unsigned int)numChildren;
     }
 
     // Returns every scenenode below this node in the scenegraph in a vector
@@ -209,7 +223,7 @@ public:
 private:
     /**
      * @brief Creates the VAO and VBO for this node using a mesh, if mesh contains texture coordinates then it
-     * computes the tangents and bitangents as well.
+     * computes the tangents and bitangents as well. Sends all mesh info to vertex shader.
      *
      * @param mesh
      * @return VAO ID
@@ -272,7 +286,7 @@ private:
     /**
      * @brief Initialize a texture with data from the image and return its texture ID
      *
-     * @param texture the loaded texture
+     * @param texture the loaded image
      */
     static unsigned int initTexture(Image texture)
     {
@@ -291,8 +305,7 @@ private:
     /**
      * @brief Calculates Tangents and Bitangents
      *
-     * Direct Copy From: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
-     * But without the normals, as they weren't used
+     * Based on: http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
      *
      * @param vertices Vertices of Mesh
      * @param uvs Texture Coordinates of mesh
@@ -360,7 +373,7 @@ private:
         std::ifstream fdiff((root + diffuse).c_str());
         if (!fdiff.fail())
         {
-            node->textures.colorID = initTexture(Image(root + diffuse));
+            node->textures.diffuseID = initTexture(Image(root + diffuse));
         }
         else
         {

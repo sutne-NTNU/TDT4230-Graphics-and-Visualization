@@ -29,6 +29,8 @@ namespace UTILS
         return glm::lookAt(position, position + direction, up);
     }
 
+
+
     /**
      * @brief Creates and returns projection matrix based on the params
      *
@@ -38,6 +40,8 @@ namespace UTILS
     {
         return glm::perspective(glm::radians(FOV), float(WINDOW::width) / float(WINDOW::height), 0.1f, 350.f);
     }
+
+
 
     /**
      * @brief Finds x, y and z coordinates on the surface of a sphere where the sphere is divided
@@ -62,6 +66,12 @@ namespace UTILS
         return glm::vec3(x, y, z);
     }
 
+
+    /**
+     * @brief Saves content of the current window framebuffer to "screenshot dd-mm-yyyy hhmmss.png"
+     *
+     * @param window The window to take a screenshot of
+     */
     void takeScreenshot(GLFWwindow *window)
     {
         // Get pixel data from screen
@@ -87,24 +97,4 @@ namespace UTILS
     {
         std::cout << desc << ": (" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
     }
-
-    // void showFrameBufferContent(Framebuffer frambeuffer)
-    // {
-    //     Mesh mesh = Mesh();
-
-    //     mesh.addQuad(
-    //         glm::vec3(-1.0f, -1.0f, 0.0f),
-    //         glm::vec3(1.0f, -1.0f, 0.0f),
-    //         glm::vec3(1.0f, 1.0f, 0.0f),
-    //         glm::vec3(-1.0f, 1.0f, 0.0f));
-
-    //     mesh.textureCoordinates = {
-    //         glm::vec2(0.0f, 0.0f),
-    //         glm::vec2(0.0f, 1.0f),
-    //         glm::vec2(1.0f, 1.0f),
-    //         glm::vec2(1.0f, 0.0f)
-    //     };
-
-
-    // }
 }

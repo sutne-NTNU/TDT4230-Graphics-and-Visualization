@@ -38,7 +38,6 @@ public:
      */
     Image(const std::string &filename)
     {
-        // Load image
         int channels;
         unsigned char *data = STB::load(filename.c_str(), &width, &height, &channels, 4);
         if (!data)
@@ -46,7 +45,7 @@ public:
             std::cout << "Failed to load image: " << filename << std::endl;
             return;
         }
-        // Create and return image struct
+
         if (channels < 1 || 4 < channels)
         {
             std::cout << "Image " << filename << ": Invalid number of channels: " << channels << std::endl;
@@ -55,10 +54,10 @@ public:
         for (int i = 0; i < width * height * 4; i += 4)
         {
             Pixel pixel;
-            pixel.r = data[i];
-            if (channels >= 2) pixel.g = data[i + 1];
-            if (channels >= 3) pixel.b = data[i + 2];
-            if (channels >= 4) pixel.a = data[i + 3];
+            if (1 <= channels) pixel.r = data[i + 0];
+            if (2 <= channels) pixel.g = data[i + 1];
+            if (3 <= channels) pixel.b = data[i + 2];
+            if (4 <= channels) pixel.a = data[i + 3];
             pixels.push_back(pixel);
         }
         if (OPTIONS::verbose) std::cout << "Loaded image: " << filename << " \tWidth: " << width << " Height: " << height << " Channels: " << channels << std::endl;
@@ -100,6 +99,7 @@ public:
     //  | x  |      |    |
     //  |    |  ->  | x  |
     //  |----|      |----|
+    //
     void flipY()
     {
         for (unsigned int x = 0; x < width; x++)
@@ -118,6 +118,7 @@ public:
     //  |------|      |------|
     //  | x    |  ->  |    x |
     //  |------|      |------|
+    //
     void flipX()
     {
         for (unsigned int x = 0; x < width / 2; x++)
@@ -137,6 +138,7 @@ public:
     //  |------|      | x  |
     //  | x    |  ->  |    |
     //  |------|      |----|
+    //
     void rotate90ClockWise()
     {
         unsigned int newWidth = height, newHeight = width;
@@ -161,7 +163,7 @@ private:
     // get pointer to pixel at (x, y)
     Pixel *getPixel(int x, int y)
     {
-        if (x < 0 || x >= width || y < 0 || y >= height)
+        if (x < 0 || width <= x || y < 0 || height <= y)
         {
             std::cout << "Image::getPixel: Pixel out of bounds" << std::endl;
             return nullptr;

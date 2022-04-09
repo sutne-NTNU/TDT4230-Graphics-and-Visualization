@@ -95,7 +95,7 @@ namespace SHAPES
     Mesh Cylinder(float radius, float height)
     {
         // Consider a sylinder just a bunch of slices of cake, where each slice is a partial prism
-        unsigned int slices = radius * detailLevel;
+        unsigned int slices = 100;
 
         float y = height * 0.5f;
 
@@ -141,7 +141,7 @@ namespace SHAPES
 
     Mesh Sphere(float radius)
     {
-        unsigned int slices = radius * detailLevel, layers = radius * detailLevel;
+        unsigned int slices = 50, layers = 50;
 
         Mesh mesh;
         for (int slice = 0; slice < slices; slice++)

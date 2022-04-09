@@ -1,6 +1,6 @@
 #version 460 core
 
-// In
+// From Vertex Shader
 in layout(location = 1) vec3 in_fragment_position;
 in layout(location = 2) vec3 in_normal;
 in layout(location = 3) vec2 in_texture_coordinates;
@@ -13,13 +13,13 @@ uniform layout(location = 12) vec3 sunlight_color;
 uniform layout(location = 13) vec3 sunlight_direction;
 
 // Textures
-uniform layout(binding = 1) sampler2D color_map;
+uniform layout(binding = 1) sampler2D diffuse_map;
 uniform layout(binding = 2) sampler2D normal_map;
 uniform layout(binding = 3) sampler2D roughness_map;
 
 
 
-// Out
+// Output
 out vec4 fragment_color;
 
 
@@ -42,13 +42,13 @@ vec3 sunlight(vec3 N, float rgh)
 void main()
 {
     vec3 normal     = normalize(in_normal);
-    vec3 color      = vec3(0.99, 0.37, 0.37);
+    vec3 color      = vec3(1, 0.11, 0.85);
     float roughness = 0.4;
 
     if (has_textures)
     {
         // normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
-        // color     = texture(color_map, in_texture_coordinates).rgb;
+        // color     = texture(diffuse_map, in_texture_coordinates).rgb;
         // roughness = texture(roughness_map, in_texture_coordinates).x;
     }
 
