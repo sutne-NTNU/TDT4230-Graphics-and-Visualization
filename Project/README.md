@@ -1,12 +1,28 @@
-# Project
+# Light reflection and refraction using dynamic cubemaps
 
-## Description
 
-<!-- What is the project about and what is it supposed to do -->
 
-## Desired Result
 
-<!-- What exactly should the finished product look like/How should it behave -->
+
+
+## Using the application
+
+### Options
+
+For easy configuration i placed a few options in the *src/options.hpp* file, change these according to preference.
+
+### Buttons
+
+- WASD + LShift + Space: Move Camera in all directions
+- Q: decrease camera sensitivity and speed
+- E: increase camera sensitivity and speed
+- R: reset camera sensitivity and speed
+- T: Pause/Start rotation of the bust
+- L: Swap Scene (skybox)
+- M: Change Material of the bust
+- N: Change Material of all the shapes
+- X: Take a Screenshot
+- UP / DOWN: Increase/decrease reflection resoution
 
 
 ## Installation and Execution
@@ -22,18 +38,18 @@ Make sure you have installed the following:
 - C++ compiler
 - CMake
 
-To run the program simply make the project with:
+To build, compile and run the program simply use:
 
 ```txt
-cd build
-cmake ..
+make run
 ```
 
-And then build and run it with:
+you can also use:
 
 ```txt
-make
+make help
 ```
+To get a list of other available commands.
 
 ### Windows
 
@@ -49,16 +65,6 @@ Make sure you have installed the following:
     - CMake for windows
     - C++ Clang Tools
 
-##### How to use VSCode
-
-> This is an optional step, if you specifically want to use VSCode.
-
-After all the installations you need to add **MSBuild.exe** to your environment path. This is a part of the Visual Studio Community program, but when added to the path it can be easily used from any terminal. Simply add the following (or similar) to *Path*:
-
-```txt
-C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin
-```
-
 #### Building with CMake
 
 From the root of the project do
@@ -71,13 +77,27 @@ cmake ..
 
 ##### Visual Studio
 
-If you are using using Visual Studio, you should be able to build and execute the project from there by selecting **glowbox**.
+If you are using using Visual Studio, you should be able to build and execute the project from there by selecting **TDT4230_Project**. (i have not tested this myself, as i have only been using the VSCode method)
 
 ##### VSCode
 
-I included some handy *tasks* for VSCode in the **.vscode/tasks.json** file, these can be used by using/innstalling the *Task Runner* extension and enables building and running the project with a single buttonpress.
+###### Adding *MSBuild.exe* to path
 
-If you want to perform it manually you, while still inside the **build** folder, create the executable with:
+> This is an optional step, if you specifically want to use VSCode.
+
+After all the installations you need to add *MSBuild.exe* to your environment path. This is a part of the Visual Studio Community program, but when added to the path it can be easily used from any terminal. Simply add the following (or equivalent) to *Path*:
+
+```txt
+C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin
+```
+
+###### Compile and Run
+
+I included some handy *tasks* for VSCode in the **.vscode/tasks.json** file, these can be used by innstalling the *Task Runner* extension and enables building and running the project with a single buttonpress. The tasks also list all the commands so you can enter them manually.
+
+To build and run the project simply perform the task *Build and Run*. If you have forgotten to use *CMake* there is a handy task for that as well.
+
+If you want to perform it manually you, while inside the **build** folder, create the executable with:
 
 ```txt
 MSBuild.exe .\TDT4230_Project.sln

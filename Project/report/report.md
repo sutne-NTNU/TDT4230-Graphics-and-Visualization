@@ -14,7 +14,7 @@ lot: true
 # 
 author: Sivert Utne
 date: \today
-title: Project Description
+title: Reflection and Refraction with Dynamic Cubemaps and Framebuffers
 subtitle: TDT4230 Graphics and Visualization
 header-includes: |
     \fancyhead[l]{TDT4230\\\textbf{Graphics and Visualization}}
@@ -22,73 +22,71 @@ header-includes: |
 ---
 
 
+
+<!-- Briefly describe your project topic. -->
+# Project Description
+
+## Initial Idea
+
+My initial idea for tis project was to create as realistic light behavior as possible. This would include light reflection, refraction, dispersion...
+
+## Final Project
+The final iteration of the project achieves most of what i sent out to achieve, however the major difference here is that it only applies these effects on light going directly into the camera. In other words the project was simplified from a global lighting, where for instace the refraction of a glass sphere would impact the light behind it, to only handle light going into the camera. The main parts of the project are shown in the subsections below:
+
+## Reflection
+
+![Image that shows skybox reflection]()
+
+## Refraction
+
+![Image that shows skybox refraction]()
+
+## Fresnel
+
+![Image that visualizes reflective part of fresnel in pink]()
+![Image that shows the fresnel effect result]()
+
+
+## Chromatic Abberition
+
+![Image without chromatic abberition]()
+![Image with chromatic abberition]()
+
+
+<!-- How does your implementation achieve its goal? -->
+# Implementation
+
+My implementation relies heavily on the use of FrameBuffers. A Framebuffer is a buffer containing both depth, color and stencil, but for my project i only used the color buffer.
+
+To create accurate reflections and refraction that include the objects in the scene, each Object has its own framebuffer. When the scene is rendered the first frame this framebuffer is empty. On each render the scene is rendered 6 times per reflective/refractive object to create a cubemap of the scene for that particular object.
+
+![Images of original cubemap]()
+![Image of the created cubemap for a node]()
+
+
+The object will then in the final render pass use this cubemap instead of the normal skybox to fetch its reflection/refractions. The great thing about this approach is that when the dynamic cubemap for this object is created the next frame, all the other objects in the scene will be using the dynamic cubemap they created the previous frame. On the scene this has the effect of light bouncing back and forth between reflective objects. This is great news as this means we essentially get infinite "ray bounces", with no additional rendering cost. Ofcourse creating a cubemap for each object isnt free, but this will be discussed in the [Advantages/Disadvantages] section.
+
+![Image that shows infinite reflection bounces]()
+
+<!-- What are some notable problems you encountered on the way? How did you solve them? -->
+# Problems
+
+## Implementation Problems
+
+
+## Techincal Problems
+
+One of the most infuriating problems for me this project was not actually realted to the project itself, but the fact that my computer (running bootcamp on MacOS), did not have proper functional drivers that did not cause a perticualr issue. This issue is that if i tried to sample a texture in a shader, the gometry would either turn black or 100% transparent. Now working with cubemaps that aessentially are textures this caused a fair deal of headaches.
+
+<!-- What did you find out about the method in terms of its advantages, its limitations, and how
+to use it effectively? -->
+# Advantages/Disadvantages
+
+<!-- Briefly mention what resources did you used to learn about the technique. No need to include
+every link to everything you read, but I should get a general idea of how you figured it out,
+even if the answer ends up being pure experimentation! -->
+# Sources and Progress
+
+
+All skyboxes and the marble bust model were downloaded from [Poly Haven]
 [HDRI image](https://polyhaven.com/a/neurathen_rock_castle)
-
-<!-- https://www.turais.de/how-to-load-hdri-as-a-cubemap-in-opengl/ -->
-
-# Ray Traced Light Refraction and Dispersion
-
-For my project i want to explore realistic light behavior primarily through water and glass. Some things i hope to achieve is:
-
-- Rainbow light after passing white light through a glass prism
-- Accurate light refraction through glass/water shapes
-
-The program basics:
-
-Simple scene with a cubemap to create the accurate refractions through glass objects. Able to move the camera around with WASD+Space+LShift. The mouse changes the camera rotation.
-The Scene should also contain a "table" with a glass prism, lightsource should be able to be rotated around this glass prism with the mouse scrollwheel, light colour can be changed using RGB, idea is that this will make it possible to see how the light angle and color affects the refraction and dispersion.
-
-
-**In short, i want to be able to reproduce the following real life effects:**
-
-![White light being dispersed into all visible colors due to their wavelengths.](images/prism.jpg){width=60%}
-
-![Interesting refraction from water in a glass](images/refraction.jpeg){width=60%}
-
-
-
-
-# Ray Traced Reflections, Refraction and Dispersion
-
-## Attempt 1 - CubeMap
-
-Easy, just follow tutorial, decent enough for basic cases, only reflect the cubemap nothing in the scene
-
-## Attempt 2 - Dynamic / Bufferreed Cubemaps
-
-Render the scene multiple times and use the scene to create new cubemaps, placing the camera in reflective objects to find other objects in scene.
-
-This requires rerendering the scene 6 times per object, per "ray bounce" so if i want reflections to go three times the scene is rendered 18 times per reflective object
-
-This is also quite high tech considering it is used in a AAA game realeased just 1 month ago [GTA V](https://www.adriancourreges.com/blog/2015/11/02/gta-v-graphics-study/).
-
-
-
-Okay so here is the final idea:
-
-To get "double" refraction, just render the scene in each glass object with GL_CULL_FACE reversed (so the inside will perfor)
-
-
-## Buttons
-
-- WASD: mode camera physically
-- Space/LShift: move camera up and down
-- Q: decrease camera sensitivity and speed
-- E: increase camera sensitivity and speed
-- R: reset camera sensitivity and speed
-- T: Pause/Start rotation of objects in the scene
-- L: Swap Scene (skybox)
-
-
-## for reflections
-
-- Render scene 6 times to 6 different (color only) framebuffers
-- Create cubemap from these 6 textures
-- Use the generated cubemap for the main render
-
-
-## For double refraction:
-
-- Render scene with frontface culling
-- Store normals to color texture (framebuffer)
-- Use combination of normals from this texture and from the actual normals to create double refraction
