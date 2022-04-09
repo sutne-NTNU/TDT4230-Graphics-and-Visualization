@@ -15,21 +15,21 @@
 // and allows switching between them dynamically
 class ShaderManager
 {
-private:
+public:
     Shader *reflectionShader;
     Shader *refractionShader;
     Shader *sunlightShader;
 
-public:
+
     ShaderManager()
     {
-        reflectionShader = new Shader("main.vert", "reflective.frag");
-        refractionShader = new Shader("main.vert", "refractive.frag");
-        sunlightShader   = new Shader("main.vert", "sunlight.frag");
+        reflectionShader     = new Shader("main.vert", "reflective.frag");
+        refractionShader     = new Shader("main.vert", "refractive.frag");
+        sunlightShader       = new Shader("main.vert", "sunlight.frag");
     }
 
     /**
-     * @brief Finds the correct shader for the node
+     * @brief Finds the correct shader for the node, if node is not able to be rendered returns nullptr
      *
      * @param node The node that is going to be rendered next
      */

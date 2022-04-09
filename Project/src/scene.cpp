@@ -13,6 +13,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/transform.hpp>
 
+
+
 #include "classes/camera.hpp"
 #include "classes/framebuffer.hpp"
 #include "classes/image.hpp"
@@ -116,30 +118,32 @@ void initSceneGraph()
 
     // Geometric Shapes
     float size    = 10.0f;
-    float spacing = size * 1.5f;
+    float spacing = size * 2.0f;
 
     shapes              = new SceneNode();
-    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), SUNLIT);
-    SceneNode *cube1    = SceneNode::fromMesh(SHAPES::Cube(size), REFLECTIVE);
-    SceneNode *cube2    = SceneNode::fromMesh(SHAPES::Cube(size), REFRACTIVE);
+    SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), REFLECTIVE);
+    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size / 3, size / 3), SUNLIT);
+    SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), REFLECTIVE);
     SceneNode *sphere1  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFRACTIVE);
-    SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
     SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), REFRACTIVE);
+    SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
 
-    pyramid->translate(-spacing, 0, 0);
-    sphere1->translate(0, 0, 0);
-    cube1->translate(spacing, 0, 0);
-    sphere2->translate(-spacing, 0, -spacing);
-    cylinder->translate(0, 0, -spacing);
-    cube2->translate(spacing, 0, -spacing);
+    prism->translate(-spacing, 0, -spacing);
+    pyramid->translate(0, 0, -spacing);
+    cube->translate(spacing, 0, -spacing);
+    sphere1->translate(-spacing, 0, 0);
+    cylinder->translate(0, 0, 0);
+    sphere2->translate(spacing, 0, 0);
+
+    prism->rotate(90);
 
     root->addChild(shapes);
+    shapes->addChild(prism);
     shapes->addChild(pyramid);
-    shapes->addChild(cube1);
-    shapes->addChild(cube2);
+    shapes->addChild(cube);
     shapes->addChild(sphere1);
-    shapes->addChild(sphere2);
     shapes->addChild(cylinder);
+    shapes->addChild(sphere2);
 
     // Rotating Bust
     std::string resolution = "1k";
@@ -186,9 +190,43 @@ void renderFrame()
     Framebuffer::activateScreen();
     // Render The scene
     skyboxManager->render(view, projection);
-    for (SceneNode *node : root->getAllChildren()) renderNode(node, view, projection, camera->position);
+    for (SceneNode *node : root->getAllChildren())
+    {
+        renderNode(node, view, projection, camera->position, shaderManager->getShaderFor(node));
+    }
 }
 
+
+
+// void renderFrame()
+// {
+//     Framebuffer::activateScreen();
+//     SceneNode *masterNode = shapes->children[2];
+
+//     // int side            = 0;
+//     // glm::vec3 direction = CubemapDirections::view[side];
+//     // glm::vec3 up        = CubemapDirections::up[side];
+//     glm::vec3 direction = camera->front;
+//     glm::vec3 up        = camera->up;
+
+//     glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0f, 1.0f);
+//     glm::mat4 view       = UTILS::getViewMatrix(masterNode->position, direction, up);
+
+//     // Render Scene, but skip this node
+//     skyboxManager->render(view, projection);
+//     for (SceneNode *node : root->getAllChildren())
+//     {
+//         if (node == masterNode) continue;
+//         renderNode(node, view, projection, masterNode->position, shaderManager->getShaderFor(node));
+//     }
+//     // Now entire scene is rendered, but for refractive object we want to refract the scene from the inside
+//     if (masterNode->appearance == REFRACTIVE)
+//     {
+//         glCullFace(GL_FRONT);
+//         renderNode(masterNode, view, projection, masterNode->position, shaderManager->backRefractionShader);
+//         glCullFace(GL_BACK);
+//     }
+// }
 
 
 /**
@@ -201,82 +239,52 @@ void renderFrame()
  */
 void updateEnvironmentBuffers()
 {
-    for (SceneNode *node : root->getAllChildren())
+    for (SceneNode *masterNode : root->getAllChildren())
     {
-        if (node->appearance != REFLECTIVE && node->appearance != REFRACTIVE) continue;
+        // Make sure node actually needs the environment map
+        if (masterNode->appearance != REFLECTIVE && masterNode->appearance != REFRACTIVE) continue;
 
-        node->environmentBuffer->activate();
-
+        masterNode->environmentBuffer->activate();
         for (unsigned int side = 0; side < 6; side++)
         {
             glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0f, 1.0f);
-            glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
+            glm::mat4 view       = UTILS::getViewMatrix(masterNode->position, CubemapDirections::view[side], CubemapDirections::up[side]);
 
-            node->environmentBuffer->selectRenderTargetSide(side);
+            masterNode->environmentBuffer->selectRenderTargetSide(side);
 
-            // Render Scene
+            // Render Scene, but skip this node
             skyboxManager->render(view, projection);
-            for (SceneNode *graphNode : root->getAllChildren())
+            for (SceneNode *node : root->getAllChildren())
             {
-                // Render all nodes except this node
-                if (graphNode != node) renderNode(graphNode, view, projection, node->position);
+                if (node == masterNode) continue;
+                renderNode(node, view, projection, masterNode->position, shaderManager->getShaderFor(node));
             }
         }
-        node->hasEnvironmentMap = true;
+        masterNode->hasEnvironmentMap = true;
     }
 }
 
 
-
 /**
- * @brief Render the given node with the given view, projection and camera position.
- * The method sets all uniform values and renders the node's mesh.
+ * @brief Activates the shader. Passes all scene information to the shader and renders the node
  *
- * To make things a easy for myself im ditching the recursive rendering of the scenenodes.
- * This enables me to render the entire scene, but treat a specific node in a particular way (e.g skip it)
- * I have to do this to prevent the node trying to sample itself when creating the environment map, which creates ugly artifacts.
- * The ideal way to solve this would have the node be able to reflect itself, but i dont have time figure that out :/
- *
- * @param node
- * @param view
- * @param projection
- * @param cameraPos
+ * @param node the node to render
+ * @param view View Matrix
+ * @param projection Projection Matrix
+ * @param cameraPosition The position of which the nodes should be seen from
+ * @param shader The shader to use (can be nullptr)
  */
-void renderNode(
-    SceneNode *node,
-    glm::mat4 view,
-    glm::mat4 projection,
-    glm::vec3 cameraPosition)
+void renderNode(SceneNode *node, glm::mat4 view, glm::mat4 projection, glm::vec3 cameraPosition, Shader *shader)
 {
-    // get correct shader for this node
-    Shader *shader = shaderManager->getShaderFor(node);
     if (shader == nullptr) return;
-
     shader->activate();
 
-    shader->setUniform(UNIFORMS::M, node->M);
     shader->setUniform(UNIFORMS::V, view);
     shader->setUniform(UNIFORMS::P, projection);
-    shader->setUniform(UNIFORMS::N, node->N);
     shader->setUniform(UNIFORMS::camera_position, cameraPosition);
     shader->setUniform(UNIFORMS::sunlight_color, skyboxManager->getSunlightColor());
     shader->setUniform(UNIFORMS::sunlight_direction, skyboxManager->getSunlightDirection());
+    glBindTextureUnit(BINDINGS::skybox, skyboxManager->getTextureID());
 
-    // let the shader know if it should use textures or not
-    shader->setUniform(UNIFORMS::has_textures, node->textures.hasTextures);
-    if (node->textures.hasTextures)
-    {
-        glBindTextureUnit(BINDINGS::diffuse_map, node->textures.diffuseID);
-        glBindTextureUnit(BINDINGS::normal_map, node->textures.normalID);
-        glBindTextureUnit(BINDINGS::roughness_map, node->textures.roughnessID);
-    }
-
-    // Set correct skybox depending upon wether this ndoe has a dynamic cubemap or not
-    if (node->hasEnvironmentMap)
-        glBindTextureUnit(BINDINGS::skybox, node->environmentBuffer->textureID);
-    else
-        glBindTextureUnit(BINDINGS::skybox, skyboxManager->getTextureID());
-
-    // Finally render the nodes mesh
-    node->render();
+    node->render(shader);
 }

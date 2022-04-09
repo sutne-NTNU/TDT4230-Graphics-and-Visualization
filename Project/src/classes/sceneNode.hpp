@@ -161,12 +161,38 @@ public:
         for (SceneNode *child : children) child->updateTransformations(M);
     }
 
-    // Render this nodes vertices, all uniforms must be set before this is called
-    void render()
-    {
-        if (vao.ID == -1) return;
 
-        // Bind this nodes vertices and draw them
+    /**
+     * @brief Render the given node with the given view, projection and camera position.
+     * The method sets all uniform values in the given shader and renders the node's mesh.
+     *
+     * To make things a easy for myself im ditching the recursive rendering of the scenenodes.
+     * This enables me to render the entire scene, but treat a specific node in a particular way (e.g skip it)
+     * I have to do this to prevent the node trying to sample itself when creating the environment map, which creates ugly artifacts.
+     * The ideal way to solve this would have the node be able to reflect itself, but i dont have time figure that out :/
+     *
+     * @param shader Which shader to use for rendering
+     */
+    void render(Shader *shader)
+    {
+        if (vao.ID == -1 || vao.indexCount <= 0) return;
+
+        shader->setUniform(UNIFORMS::M, M);
+        shader->setUniform(UNIFORMS::N, N);
+
+        // let the shader know if it should use textures or not
+        shader->setUniform(UNIFORMS::has_textures, textures.hasTextures);
+        if (textures.hasTextures)
+        {
+            glBindTextureUnit(BINDINGS::diffuse_map, textures.diffuseID);
+            glBindTextureUnit(BINDINGS::normal_map, textures.normalID);
+            glBindTextureUnit(BINDINGS::roughness_map, textures.roughnessID);
+        }
+
+        // If node has environment map, replace the regular skybox
+        if (hasEnvironmentMap) glBindTextureUnit(BINDINGS::skybox, environmentBuffer->textureID);
+
+        // Finally render the nodes mesh
         glBindVertexArray(vao.ID);
         glDrawElements(GL_TRIANGLES, vao.indexCount, GL_UNSIGNED_INT, nullptr);
     }
