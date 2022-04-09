@@ -9,7 +9,10 @@
 
 #include "options.hpp"
 
+
+
 void runProgram(GLFWwindow *window);
+
 
 
 /** Return nanoseconds since the given time point */

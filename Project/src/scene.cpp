@@ -1,19 +1,8 @@
 #include "scene.hpp"
 
-#include <chrono>
-#include <ctime>
-#include <iostream>
-
-#define GLM_ENABLE_EXPERIMENTAL
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-#include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
-
-
 
 #include "classes/camera.hpp"
 #include "classes/framebuffer.hpp"
@@ -39,7 +28,7 @@ SceneNode *root;
 SceneNode *shapes;
 SceneNode *bust;
 
-bool rotateBust = true;
+bool rotateBust = false;
 
 
 
@@ -90,10 +79,10 @@ void initScene(GLFWwindow *window)
     glfwSetScrollCallback(window, mouseScrollCallback);
     glfwSetKeyCallback(window, keyboardCallback);
 
-    shaderManager = new ShaderManager();
-    skyboxManager = new SkyboxManager(new Shader("skybox.vert", "skybox.frag"));
     keyboard      = new Keyboard();
     camera        = new Camera(glm::vec3(0, 0, 30));
+    shaderManager = new ShaderManager();
+    skyboxManager = new SkyboxManager();
 
     // Create And Inititalize Nodes and SceneGraph
     root = new SceneNode();
@@ -128,14 +117,13 @@ void initSceneGraph()
     SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), REFRACTIVE);
     SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
 
+    prism->rotate(90);
     prism->translate(-spacing, 0, -spacing);
     pyramid->translate(0, 0, -spacing);
     cube->translate(spacing, 0, -spacing);
     sphere1->translate(-spacing, 0, 0);
     cylinder->translate(0, 0, 0);
     sphere2->translate(spacing, 0, 0);
-
-    prism->rotate(90);
 
     root->addChild(shapes);
     shapes->addChild(prism);
@@ -201,16 +189,21 @@ void renderFrame()
 // void renderFrame()
 // {
 //     Framebuffer::activateScreen();
-//     SceneNode *masterNode = shapes->children[2];
+//     SceneNode *masterNode = shapes->children[4];
 
-//     // int side            = 0;
+//     // int side            = 4;
 //     // glm::vec3 direction = CubemapDirections::view[side];
 //     // glm::vec3 up        = CubemapDirections::up[side];
+//     // glm::vec3 position  = masterNode->position;
+
 //     glm::vec3 direction = camera->front;
 //     glm::vec3 up        = camera->up;
+//     glm::vec3 position  = camera->position;
 
 //     glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0f, 1.0f);
-//     glm::mat4 view       = UTILS::getViewMatrix(masterNode->position, direction, up);
+//     glm::mat4 view       = UTILS::getViewMatrix(position, direction, up);
+
+//     glViewport(0, 0, OPTIONS::environmentBufferResolution, OPTIONS::environmentBufferResolution);
 
 //     // Render Scene, but skip this node
 //     skyboxManager->render(view, projection);
@@ -218,13 +211,6 @@ void renderFrame()
 //     {
 //         if (node == masterNode) continue;
 //         renderNode(node, view, projection, masterNode->position, shaderManager->getShaderFor(node));
-//     }
-//     // Now entire scene is rendered, but for refractive object we want to refract the scene from the inside
-//     if (masterNode->appearance == REFRACTIVE)
-//     {
-//         glCullFace(GL_FRONT);
-//         renderNode(masterNode, view, projection, masterNode->position, shaderManager->backRefractionShader);
-//         glCullFace(GL_BACK);
 //     }
 // }
 

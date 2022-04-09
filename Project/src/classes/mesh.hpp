@@ -2,23 +2,18 @@
 #define MESH_HPP
 #pragma once
 
+#include <fstream>
 #include <vector>
 
+#include <cgltf.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
-#include "cgltf.h"
 #include <GLFW/glfw3.h>
-#include <fstream>
 #include <glad/glad.h>
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/vec3.hpp>
-
 
 #include "options.hpp"
-#include "utilities/wrappers.hpp"
 
 
 enum SurfaceType

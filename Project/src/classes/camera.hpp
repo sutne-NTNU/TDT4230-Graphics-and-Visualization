@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include "utilities/utils.hpp"
+
 
 class Camera
 {

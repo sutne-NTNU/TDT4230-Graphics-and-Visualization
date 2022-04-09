@@ -6,6 +6,8 @@
 
 std::chrono::steady_clock::time_point previousFrameTime = std::chrono::steady_clock::now();
 
+
+
 void runProgram(GLFWwindow *window)
 {
     // Configure miscellaneous OpenGL settings

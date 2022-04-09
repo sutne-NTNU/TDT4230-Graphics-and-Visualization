@@ -1,16 +1,23 @@
 #include "utils.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <vector>
 
+#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <glm/common.hpp>
+#include <glm/ext.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+// #include <glm/gtx/transform.hpp>
+
+
 
 #include "classes/image.hpp"
-#include "classes/mesh.hpp"
-#include "classes/sceneNode.hpp"
-#include "options.hpp"
+// #include "classes/mesh.hpp"
+// #include "classes/sceneNode.hpp"
+// #include "options.hpp"
 
 
 
@@ -96,6 +103,6 @@ namespace UTILS
 
     void print(std::string desc, glm::vec3 vec)
     {
-        std::cout << desc << ": (" << vec.x << ", " << vec.y << ", " << vec.z << ")" << std::endl;
+        printf("%s: (%f, %f, %f)\n", desc.c_str(), vec.x, vec.y, vec.z);
     }
 }

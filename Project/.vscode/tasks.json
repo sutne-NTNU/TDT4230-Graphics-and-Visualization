@@ -25,7 +25,7 @@
             "type": "shell",
             "command": "make build-and-run",
             "windows": {
-                "command": "MSBuild.exe .\\TDT4230_Project.sln -consoleloggerparameters:ErrorsOnly; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }",
+                "command": "MSBuild.exe .\\TDT4230_Project.sln -verbosity:minimal; if ($LASTEXITCODE -eq 0) { clear | Debug\\TDT4230_Project.exe }",
                 "options": {
                     "cwd": "build"
                 },
@@ -41,11 +41,11 @@
             },
         },
         {
-            "label": "Build - Strict",
+            "label": "Build",
             "type": "shell",
             "command": "make build",
             "windows": {
-                "command": "MSBuild.exe .\\TDT4230_Project.sln -WarnAsError -consoleloggerparameters:ErrorsOnly",
+                "command": "MSBuild.exe .\\TDT4230_Project.sln -verbosity:minimal",
                 "options": {
                     "cwd": "build"
                 },

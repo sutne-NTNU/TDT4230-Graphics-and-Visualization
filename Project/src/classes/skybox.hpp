@@ -2,14 +2,7 @@
 #define SKYBOX_HPP
 #pragma once
 
-
-#include <iostream>
-
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/vec3.hpp>
 #include <stb_image.h>
 
 #include "image.hpp"
@@ -86,13 +79,27 @@ public:
         glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
         // Load skybox faces to the texture
-        for (unsigned int i = 0; i < faces.size(); i++)
+        if (extensions == ".jpg")
         {
-            auto idx = faces[i].rfind(".");
-            assert(("SkyBox has invalid extension", faces[i].substr(idx + 1) != ".jpg")); // Failed to get .jpg to load properly with my Image class
-
-            Image image = Image(faces[i]);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.data());
+            // Struggling to get .jpg to work properly for some reason with my Image class, so handle it in this nasty way, please ignore
+            int width, height, channels;
+            for (unsigned int i = 0; i < faces.size(); i++)
+            {
+                unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &channels, 0);
+                if (!data) fprintf(stderr, "Failed to load image: %s\n", faces[i].c_str());
+                if (OPTIONS::verbose) printf("Loaded image: %s \tWidth: %d Height: %d Channels: %d\n", faces[i].c_str(), width, height, channels);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+                stbi_image_free(data);
+            }
+        }
+        else
+        {
+            // Ahh much better and easy to read
+            for (unsigned int i = 0; i < faces.size(); i++)
+            {
+                Image image = Image(faces[i]);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.pixels.data());
+            }
         }
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -110,7 +117,8 @@ public:
      * before any other geometry as it will overwrite anything further away than a unit cube.
      *
      */
-    void render()
+    void
+    render()
     {
         glDepthMask(GL_FALSE);
         glBindVertexArray(vaoID);

@@ -2,13 +2,11 @@
 #define FRAMEBUFFER_HPP
 #pragma once
 
-#include <iostream>
 #include <string>
 #include <vector>
 
 #include <glm/glm.hpp>
 
-#include "options.hpp"
 
 
 /**
@@ -140,7 +138,7 @@ private:
         auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (status == GL_FRAMEBUFFER_COMPLETE) return;
 
-        fprintf(stderr, "\nError: %s\t%s", errorMessage.c_str(), status);
+        fprintf(stderr, "\nError: %s\t%d", errorMessage.c_str(), (int)status);
         assert(("Framebuffer is not okay", false));
     }
 };

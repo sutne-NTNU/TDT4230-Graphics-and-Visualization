@@ -2,9 +2,6 @@
 #define SHADER_MANAGER_HPP
 #pragma once
 
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-
 #include "classes/sceneNode.hpp"
 #include "classes/shader.hpp"
 #include "options.hpp"
@@ -23,9 +20,9 @@ public:
 
     ShaderManager()
     {
-        reflectionShader     = new Shader("main.vert", "reflective.frag");
-        refractionShader     = new Shader("main.vert", "refractive.frag");
-        sunlightShader       = new Shader("main.vert", "sunlight.frag");
+        reflectionShader = new Shader("main.vert", "reflective.frag");
+        refractionShader = new Shader("main.vert", "refractive.frag");
+        sunlightShader   = new Shader("main.vert", "sunlight.frag");
     }
 
     /**

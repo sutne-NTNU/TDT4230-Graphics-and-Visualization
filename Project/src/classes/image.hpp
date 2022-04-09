@@ -3,7 +3,6 @@
 #pragma once
 
 #include <fstream>
-#include <iostream>
 #include <vector>
 
 #include "options.hpp"
@@ -42,13 +41,15 @@ public:
         unsigned char *data = STB::load(filename.c_str(), &width, &height, &channels, 4);
         if (!data)
         {
-            std::cout << "Failed to load image: " << filename << std::endl;
+            fprintf(stderr, "Failed to load image: %s\n", filename.c_str());
+            exit(EXIT_FAILURE);
             return;
         }
 
         if (channels < 1 || 4 < channels)
         {
-            std::cout << "Image " << filename << ": Invalid number of channels: " << channels << std::endl;
+            fprintf(stderr, "Image %s: Invalid number of channels: %d\n", filename.c_str(), channels);
+            exit(EXIT_FAILURE);
             return;
         }
         for (int i = 0; i < width * height * 4; i += 4)
@@ -60,7 +61,7 @@ public:
             if (4 <= channels) pixel.a = data[i + 3];
             pixels.push_back(pixel);
         }
-        if (OPTIONS::verbose) std::cout << "Loaded image: " << filename << " \tWidth: " << width << " Height: " << height << " Channels: " << channels << std::endl;
+        if (OPTIONS::verbose) printf("Loaded image: %s \tWidth: %d Height: %d Channels: %d\n", filename.c_str(), width, height, channels);
     }
 
 
@@ -87,7 +88,7 @@ public:
     {
         std::string file = root + filename;
         STB::write(file.c_str(), width, height, pixels);
-        std::cout << "Wrote image: " << file << std::endl;
+        printf("Saved image: %s\n", file.c_str());
         free(pixels);
     }
 
@@ -159,13 +160,14 @@ public:
     }
 
 
+
 private:
     // get pointer to pixel at (x, y)
     Pixel *getPixel(int x, int y)
     {
         if (x < 0 || width <= x || y < 0 || height <= y)
         {
-            std::cout << "Image::getPixel: Pixel out of bounds" << std::endl;
+            fprintf(stderr, "Image::getPixel: Pixel out of bounds\n");
             return nullptr;
         }
         return &pixels[y * width + x];

@@ -2,10 +2,8 @@
 
 #include <string>
 
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-
-#include "classes/image.hpp"
-#include "classes/mesh.hpp"
 
 
 

@@ -17,14 +17,14 @@ private:
     Shader *skyboxShader;
 
 public:
-    SkyboxManager(Shader *skyboxShader)
+    SkyboxManager()
     {
-        this->skyboxShader = skyboxShader;
-        activeSkyboxIndex  = 0;
+        skyboxShader      = new Shader("skybox.vert", "skybox.frag");
+        activeSkyboxIndex = 0;
         if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 1;
 
         skyboxes.push_back(Skybox(
-            "forest", ".png",                         // Images
+            "mountain", ".png",                       // Images
             glm::vec3(0.529871, -0.340380, 0.776775), // Sunlight Direction
             glm::vec3(0.98, 0.97, 0.88)               // Sunlight Color
             ));
@@ -38,9 +38,15 @@ public:
             ));
 
         skyboxes.push_back(Skybox(
-            "forest2", ".png",                        // Images
+            "forest", ".png",                         // Images
             glm::vec3(0.539989, -0.414694, 0.732421), // Sunlight Direction
             glm::vec3(1, 1, 1)                        // Sunlight Color
+            ));
+
+        skyboxes.push_back(Skybox(
+            "lake", ".jpg",                           // Images
+            glm::vec3(0.529871, -0.340380, 0.776775), // Sunlight Direction
+            glm::vec3(0.98, 0.97, 0.88)               // Sunlight Color
             ));
     }
 

@@ -2,8 +2,6 @@
 
 #include <GLFW/glfw3.h>
 
-
-
 #include "classes/sceneNode.hpp"
 #include "classes/shader.hpp"
 

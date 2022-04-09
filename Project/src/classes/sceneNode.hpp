@@ -4,16 +4,14 @@
 
 #include <vector>
 
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
 
+#include "classes/image.hpp"
 #include "classes/shader.hpp"
 #include "framebuffer.hpp"
 #include "mesh.hpp"
-#include "utilities/utils.hpp"
+
 
 
 // Im keeping it simple for myself
@@ -133,7 +131,7 @@ public:
     void decreaseEnvironmentResolution()
     {
         int newResolution = environmentBuffer->width / 2;
-        if (newResolution < 10) return;
+        if (newResolution < 32) return;
         environmentBuffer = new Framebuffer(newResolution);
         hasEnvironmentMap = false;
     }
@@ -410,7 +408,7 @@ private:
         }
         else
         {
-            std::cout << "Could not load texture: " << (root + diffuse) << std::endl;
+            printf("Could not load texture: %s\n", (root + diffuse).c_str());
             return;
         }
         std::ifstream fnor((root + normal).c_str());
@@ -420,7 +418,7 @@ private:
         }
         else
         {
-            std::cout << "Could not load texture: " << (root + normal) << std::endl;
+            printf("Could not load texture: %s\n", (root + normal).c_str());
             return;
         }
         std::ifstream frough((root + roughness).c_str());
@@ -430,7 +428,7 @@ private:
         }
         else
         {
-            std::cout << "Could not load texture: " << (root + roughness) << std::endl;
+            printf("Could not load texture: %s\n", (root + roughness).c_str());
             return;
         }
         node->textures.hasTextures = true;

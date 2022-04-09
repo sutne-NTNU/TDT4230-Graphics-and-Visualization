@@ -18,7 +18,7 @@ uniform layout(binding = 2) sampler2D normal_map;
 
 // Values
 float refraction_index  = 1.53; // Glass
-float dispersion_factor = 0.0015;
+float dispersion_factor = 0.00175;
 
 
 
