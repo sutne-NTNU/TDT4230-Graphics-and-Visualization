@@ -21,8 +21,7 @@ enum AppearanceType
 {
     REFLECTIVE, // reflects 100% of light
     REFRACTIVE, // refracts with fresnel effect
-    TEXTURED,   // use diffuse map for color
-    CLASSIC     // single color object with roughness
+    SUNLIT      // use color / diffuse map for color and add sunlight and shadows
 };
 
 // Keeps track of all three texture types im using
@@ -216,6 +215,14 @@ public:
             allChildren.insert(allChildren.end(), childChildren.begin(), childChildren.end());
         }
         return allChildren;
+    }
+
+
+
+    // Increase the enum value for appearance, and return to first type if it reaches the end
+    void swapAppearance()
+    {
+        appearance = static_cast<AppearanceType>((appearance + 1) % (SUNLIT + 1));
     }
 
 

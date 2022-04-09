@@ -37,21 +37,6 @@ SceneNode *root;
 SceneNode *shapes;
 SceneNode *bust;
 
-int shapeAppearanceIndex = 0;
-int bustAppearanceIndex  = 0;
-
-const std::vector<AppearanceType> SHAPE_APPEARANCES = {
-    CLASSIC,
-    REFLECTIVE,
-    REFRACTIVE,
-};
-
-const std::vector<AppearanceType> BUST_APPEARANCES = {
-    TEXTURED,
-    REFLECTIVE,
-    REFRACTIVE,
-};
-
 bool rotateBust = true;
 
 
@@ -69,16 +54,9 @@ void keyboardCallback(GLFWwindow *window, int key, int scancode, int action, int
     if (key == GLFW_KEY_R && action == GLFW_PRESS) camera->resetSensitivity();
     if (key == GLFW_KEY_L && action == GLFW_PRESS) skyboxManager->swapSkybox();
     if (key == GLFW_KEY_T && action == GLFW_PRESS) rotateBust = !rotateBust;
-    if (key == GLFW_KEY_M && action == GLFW_PRESS)
-    {
-        bustAppearanceIndex = (bustAppearanceIndex + 1) % BUST_APPEARANCES.size();
-        bust->appearance    = BUST_APPEARANCES[bustAppearanceIndex];
-    }
+    if (key == GLFW_KEY_M && action == GLFW_PRESS) bust->swapAppearance();
     if (key == GLFW_KEY_N && action == GLFW_PRESS)
-    {
-        shapeAppearanceIndex = (shapeAppearanceIndex + 1) % SHAPE_APPEARANCES.size();
-        for (SceneNode *node : shapes->children) node->appearance = SHAPE_APPEARANCES[shapeAppearanceIndex];
-    }
+        for (SceneNode *node : shapes->children) node->swapAppearance();
     if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
     {
         camera->yaw += 90;
@@ -141,12 +119,12 @@ void initSceneGraph()
     float spacing = size * 1.5f;
 
     shapes              = new SceneNode();
-    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), SHAPE_APPEARANCES[shapeAppearanceIndex]);
-    SceneNode *cube1    = SceneNode::fromMesh(SHAPES::Cube(size), SHAPE_APPEARANCES[shapeAppearanceIndex]);
-    SceneNode *cube2    = SceneNode::fromMesh(SHAPES::Cube(size), SHAPE_APPEARANCES[shapeAppearanceIndex]);
-    SceneNode *sphere1  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), SHAPE_APPEARANCES[shapeAppearanceIndex]);
-    SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), SHAPE_APPEARANCES[shapeAppearanceIndex]);
-    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), SHAPE_APPEARANCES[shapeAppearanceIndex]);
+    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size, size), SUNLIT);
+    SceneNode *cube1    = SceneNode::fromMesh(SHAPES::Cube(size), REFLECTIVE);
+    SceneNode *cube2    = SceneNode::fromMesh(SHAPES::Cube(size), REFRACTIVE);
+    SceneNode *sphere1  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFRACTIVE);
+    SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
+    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), REFRACTIVE);
 
     pyramid->translate(-spacing, 0, 0);
     sphere1->translate(0, 0, 0);
@@ -166,7 +144,7 @@ void initSceneGraph()
     // Rotating Bust
     std::string resolution = "1k";
     if (OPTIONS::mode == OPTIONS::DEMO) resolution = "4k";
-    bust = SceneNode::fromModelName("marble_bust", resolution, BUST_APPEARANCES[bustAppearanceIndex]);
+    bust = SceneNode::fromModelName("marble_bust", resolution, SUNLIT);
 
     bust->setScale(100);
     bust->translate(0, -25, 85);
@@ -202,7 +180,7 @@ void renderFrame()
     updateEnvironmentBuffers();
 
     // Once all buffers are filled, we can render the scene from the cameras perspective
-    glm::mat4 projection = UTILS::getPerspectiveMatrix(camera->FOV);
+    glm::mat4 projection = UTILS::getPerspectiveMatrix(camera->FOV, float(WINDOW::width) / float(WINDOW::height));
     glm::mat4 view       = UTILS::getViewMatrix(camera->position, camera->front, camera->up);
     // Activate correct framebuffer
     Framebuffer::activateScreen();
@@ -225,27 +203,26 @@ void updateEnvironmentBuffers()
 {
     for (SceneNode *node : root->getAllChildren())
     {
-        if (node->appearance == REFLECTIVE || node->appearance == REFRACTIVE)
+        if (node->appearance != REFLECTIVE && node->appearance != REFRACTIVE) continue;
+
+        node->environmentBuffer->activate();
+
+        for (unsigned int side = 0; side < 6; side++)
         {
-            node->environmentBuffer->activate();
+            glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0f, 1.0f);
+            glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
 
-            for (unsigned int side = 0; side < 6; side++)
+            node->environmentBuffer->selectRenderTargetSide(side);
+
+            // Render Scene
+            skyboxManager->render(view, projection);
+            for (SceneNode *graphNode : root->getAllChildren())
             {
-                glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0); // 90 degrees is supposed to make the cubemap faces line up perfectly
-                glm::mat4 view       = UTILS::getViewMatrix(node->position, CubemapDirections::view[side], CubemapDirections::up[side]);
-
-                node->environmentBuffer->selectRenderTargetSide(side);
-
-                // Render Scene
-                skyboxManager->render(view, projection);
-                for (SceneNode *graphNode : root->getAllChildren())
-                {
-                    // Render all nodes except this node
-                    if (graphNode != node) renderNode(graphNode, view, projection, node->position);
-                }
+                // Render all nodes except this node
+                if (graphNode != node) renderNode(graphNode, view, projection, node->position);
             }
-            node->hasEnvironmentMap = true;
         }
+        node->hasEnvironmentMap = true;
     }
 }
 

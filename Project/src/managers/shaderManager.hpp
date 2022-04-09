@@ -37,8 +37,7 @@ public:
     {
         if (node->appearance == REFLECTIVE) return reflectionShader;
         if (node->appearance == REFRACTIVE) return refractionShader;
-        if (node->appearance == CLASSIC) return sunlightShader;
-        if (node->appearance == TEXTURED) return sunlightShader;
+        if (node->appearance == SUNLIT) return sunlightShader;
         return nullptr;
     }
 };

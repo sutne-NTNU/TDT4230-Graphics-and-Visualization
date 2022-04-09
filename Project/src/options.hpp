@@ -30,7 +30,9 @@ namespace OPTIONS
     const bool limitFPS = true;
     const int fpsLimit  = 60;
 
-    const float cameraFOV = 60;
+    const float cameraFOV         = 60;
+    const float nearClippingPlane = 0.01f;
+    const float farClippingPlane  = 300.0f;
 
     const int environmentBufferResolution = 100;
 }

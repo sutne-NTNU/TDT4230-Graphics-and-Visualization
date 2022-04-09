@@ -34,11 +34,12 @@ namespace UTILS
     /**
      * @brief Creates and returns projection matrix based on the params
      *
-     * @param FOV Field of View of the camera in degrees
+     * @param FOV Field of View in degrees
+     * @param aspectRatio Aspect ratio of the screen (Width / Height)
      */
-    glm::mat4 getPerspectiveMatrix(float FOV)
+    glm::mat4 getPerspectiveMatrix(float FOV, float aspectRatio)
     {
-        return glm::perspective(glm::radians(FOV), float(WINDOW::width) / float(WINDOW::height), 0.1f, 350.f);
+        return glm::perspective(glm::radians(FOV), aspectRatio, OPTIONS::nearClippingPlane, OPTIONS::farClippingPlane);
     }
 
 
