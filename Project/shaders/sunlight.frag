@@ -47,9 +47,9 @@ void main()
 
     if (has_textures)
     {
-        // normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
-        // color     = texture(diffuse_map, in_texture_coordinates).rgb;
-        // roughness = texture(roughness_map, in_texture_coordinates).x;
+        normal    = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
+        color     = texture(diffuse_map, in_texture_coordinates).rgb;
+        roughness = texture(roughness_map, in_texture_coordinates).x;
     }
 
     fragment_color = vec4(color * sunlight(normal, roughness), 1);

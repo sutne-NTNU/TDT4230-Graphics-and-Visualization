@@ -24,10 +24,10 @@ namespace OPTIONS
         DEMO,  // load everything with highest-res textures
     };
 
-    const MODE mode    = DEBUG;
+    const MODE mode    = DEMO;
     const bool verbose = true; // false = only print errors
 
-    const bool limitFPS = true;
+    const bool limitFPS = false;
     const int fpsLimit  = 60;
 
     const float cameraFOV         = 60;
