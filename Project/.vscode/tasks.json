@@ -103,7 +103,7 @@
         {
             "label": "Render Report",
             "type": "shell",
-            "command": "make",
+            "command": "make && echo \"DONE\"",
             "windows": {
                 "command": ""
             },
@@ -115,7 +115,7 @@
                 "echo": false,
                 "focus": false,
                 "showReuseMessage": false,
-                "reveal": "never",
+                "reveal": "always",
                 "revealProblems": "onProblem",
                 "panel": "shared",
             },

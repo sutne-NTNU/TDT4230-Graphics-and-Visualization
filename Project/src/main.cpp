@@ -63,7 +63,6 @@ GLFWwindow *initialise()
 
     // Create window using GLFW
     GLFWwindow *window = glfwCreateWindow(WINDOW::width, WINDOW::height, WINDOW::title.c_str(), nullptr, nullptr);
-    // GLFWwindow *window = glfwCreateWindow(OPTIONS::environmentBufferResolution, OPTIONS::environmentBufferResolution, WINDOW::title.c_str(), nullptr, nullptr);
 
     // Ensure the window is set up correctly
     if (!window)
