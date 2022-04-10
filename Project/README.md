@@ -3,7 +3,7 @@
 This project utilizes dynamic/buffered cubemaps created in FrameBUffers to emulate realistic reflections and refraction of light.
 
 
-![High Quality GIF](report/images/refraction/4-chromatic-abberition.png)
+![High Quality GIF](report/images/refraction/4-chromatic-aberration.png)
 
 
 ---

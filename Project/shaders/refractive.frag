@@ -31,7 +31,7 @@ out vec4 fragment_color;
 // on the type of material, the way a window is transparent when looking
 // directly at it, but from an angle it works as a mirror.
 //
-// I also include chromatic abberition, which is that different wavelengths
+// I also include chromatic aberration, which is that different wavelengths
 // of light have a different refraction index, hence why you get rainbow light
 // when it hits glass just right.
 vec3 fresnel(vec3 N)
