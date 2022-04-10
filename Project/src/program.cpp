@@ -40,7 +40,7 @@ void runProgram(GLFWwindow *window)
         glfwPollEvents();
 
         // Flip buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window); // ! Crashes here when i tried on a different computer
     }
     if (OPTIONS::verbose) printf("Window Was Closed\n");
 }
