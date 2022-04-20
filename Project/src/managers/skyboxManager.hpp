@@ -21,7 +21,6 @@ public:
     {
         skyboxShader      = new Shader("skybox.vert", "skybox.frag");
         activeSkyboxIndex = 0;
-        if (OPTIONS::mode == OPTIONS::DEMO) activeSkyboxIndex = 1;
 
         skyboxes.push_back(Skybox(
             "mountain", ".png",                       // Images
@@ -45,8 +44,8 @@ public:
 
         skyboxes.push_back(Skybox(
             "lake", ".jpg",                           // Images
-            glm::vec3(0.529871, -0.340380, 0.776775), // Sunlight Direction
-            glm::vec3(0.98, 0.97, 0.88)               // Sunlight Color
+            glm::vec3(0.422755, -0.338738, 0.840556), // Sunlight Direction
+            glm::vec3(0.98, 0.96, 1)                  // Sunlight Color
             ));
     }
 
@@ -81,7 +80,7 @@ public:
     void render(glm::mat4 view, glm::mat4 projection)
     {
         skyboxShader->activate();
-        skyboxShader->setUniform(UNIFORMS::V, glm::mat4(glm::mat3(view)));
+        skyboxShader->setUniform(UNIFORMS::V, glm::mat4(glm::mat3(view))); // Remove translation
         skyboxShader->setUniform(UNIFORMS::P, projection);
         skyboxes[activeSkyboxIndex].render();
     }

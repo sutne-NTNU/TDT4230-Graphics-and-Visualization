@@ -113,12 +113,10 @@ public:
 
 
     /**
-     * @brief Disables the depth mask and draws the skybox, this should therefore be called
+     * Disables the depth mask and draws the skybox, this should therefore be called
      * before any other geometry as it will overwrite anything further away than a unit cube.
-     *
      */
-    void
-    render()
+    void render()
     {
         glDepthMask(GL_FALSE);
         glBindVertexArray(vaoID);
@@ -175,10 +173,5 @@ private:
     };
 };
 
-
-bool operator==(const Skybox &box1, const Skybox &box2)
-{
-    return box1.textureID == box2.textureID;
-}
 
 #endif

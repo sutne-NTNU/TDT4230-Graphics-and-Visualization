@@ -110,28 +110,18 @@ void initSceneGraph()
     float spacing = size * 2.0f;
 
     shapes              = new SceneNode();
-    SceneNode *prism    = SceneNode::fromMesh(SHAPES::Prism(size, size, size), REFLECTIVE);
-    SceneNode *pyramid  = SceneNode::fromMesh(SHAPES::Pyramid(size / 3, size / 3), SUNLIT);
     SceneNode *cube     = SceneNode::fromMesh(SHAPES::Cube(size), REFLECTIVE);
-    SceneNode *sphere1  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFRACTIVE);
-    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), REFRACTIVE);
-    SceneNode *sphere2  = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
+    SceneNode *sphere   = SceneNode::fromMesh(SHAPES::Sphere(size / 2), REFLECTIVE);
+    SceneNode *cylinder = SceneNode::fromMesh(SHAPES::Cylinder(size / 2, size), REFLECTIVE);
 
-    prism->rotate(90);
-    prism->translate(-spacing, 0, -spacing);
-    pyramid->translate(0, 0, -spacing);
-    cube->translate(spacing, 0, -spacing);
-    sphere1->translate(-spacing, 0, 0);
-    cylinder->translate(0, 0, 0);
-    sphere2->translate(spacing, 0, 0);
+    cube->translate(-spacing, 0, 0);
+    sphere->translate(0, 0, 0);
+    cylinder->translate(spacing, 0, 0);
 
     root->addChild(shapes);
-    shapes->addChild(prism);
-    shapes->addChild(pyramid);
     shapes->addChild(cube);
-    shapes->addChild(sphere1);
+    shapes->addChild(sphere);
     shapes->addChild(cylinder);
-    shapes->addChild(sphere2);
 
     // Rotating Bust
     std::string resolution = "1k";
@@ -184,35 +174,6 @@ void renderFrame()
     }
 }
 
-
-
-// void renderFrame()
-// {
-//     Framebuffer::activateScreen();
-//     SceneNode *masterNode = shapes->children[4];
-
-//     // int side            = 4;
-//     // glm::vec3 direction = CubemapDirections::view[side];
-//     // glm::vec3 up        = CubemapDirections::up[side];
-//     // glm::vec3 position  = masterNode->position;
-
-//     glm::vec3 direction = camera->front;
-//     glm::vec3 up        = camera->up;
-//     glm::vec3 position  = camera->position;
-
-//     glm::mat4 projection = UTILS::getPerspectiveMatrix(90.0f, 1.0f);
-//     glm::mat4 view       = UTILS::getViewMatrix(position, direction, up);
-
-//     glViewport(0, 0, OPTIONS::environmentBufferResolution, OPTIONS::environmentBufferResolution);
-
-//     // Render Scene, but skip this node
-//     skyboxManager->render(view, projection);
-//     for (SceneNode *node : root->getAllChildren())
-//     {
-//         if (node == masterNode) continue;
-//         renderNode(node, view, projection, masterNode->position, shaderManager->getShaderFor(node));
-//     }
-// }
 
 
 /**
