@@ -85,10 +85,10 @@ void main()
 {
     vec3 normal = normalize(in_normal);
 
-    // if (has_textures)
-    // {
-    //     normal = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
-    // }
+    if (has_textures)
+    {
+        normal = normalize(TBN * (texture(normal_map, in_texture_coordinates).xyz * 2 - 1));
+    }
 
     fragment_color = vec4(fresnel(normal), 1.0);
 }
