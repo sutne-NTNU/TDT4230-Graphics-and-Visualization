@@ -1,34 +1,10 @@
 ---
-lang: en-US 
-papersize: a4 
-geometry: margin=3cm 
-numbersections: true
-colorlinks: true
-links-as-notes: true
-toc: true
-toc-depth: 3
-toc-title: Contents
-figPrefix: Figure
-tblPrefix: Table
-eqnPrefix: Equation
-title: Assignment 2 - Report
-author: Sivert Utne
-date: \today
-header-includes: |
-    \AtBeginDocument{\floatplacement{figure}{H}}
-    \AtBeginDocument{\floatplacement{codelisting}{H}}
-    \usepackage{lastpage}
-    \usepackage{cancel}
-    \usepackage{listings}
-    \usepackage{bm}
-    \usepackage{fancyhdr}
-    \pagestyle{fancy}
-    \renewcommand{\headrulewidth}{0.1px}
-    \renewcommand{\footrulewidth}{0.1px}
-    \fancyfoot[c]{Page \thepage\ of \pageref{LastPage}}
-    \fancyhead[l]{TDT4230\\\textbf{Graphics and Visualization}}
-    \fancyhead[c]{}
-    \fancyhead[r]{Assignment 2\\\textbf{Sivert Utne}}
+template: assignment.tex
+subjectcode: TDT4230
+subjectname: Graphics and Visualization
+assignment: 2
+title: Report
+date: March 6, 2022
 ---
 
 \clearpage

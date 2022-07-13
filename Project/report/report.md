@@ -1,24 +1,10 @@
 ---
-toc-title: Contents
-eqnPrefix: Equation
-figPrefix: Figure
-lofTitle: Figures
-tblPrefix: Table
-lotTitle: Tables
-lolPrefix: Listing
-lolTitle: Listings
-numbersections: false
-toc: true
-lof: false
-lot: false
-# 
-author: Sivert Utne
-date: \today
+template: report.tex
+subjectcode: TDT4230
+subjectname: Graphics and Visualization
+supertitle: Project Report
 title: Dynamic Reflections and Refractions
-subtitle: TDT4230 Graphics and Visualization
-header-includes: |
-    \fancyhead[l]{TDT4230\\\textbf{Graphics and Visualization}}
-    \fancyhead[r]{Dynamic Reflections and Refractions\\\textbf{Sivert Utne}}
+date: March 6, 2022
 ---
 
 
