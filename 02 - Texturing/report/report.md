@@ -2,15 +2,16 @@
 template: assignment.tex
 subjectcode: TDT4230
 subjectname: Graphics and Visualization
+sec-num-depth: 0
 assignment: 2
-title: Report
+title: Texturing
 date: March 6, 2022
 ---
 
 \clearpage
-# Task 1 {-}
+# Task 1
 
-## (k) {-}
+## (k)
 
 I decided to use an Orthogonal Matrix where the coordinates are from 0 to 1 with (0, 0) being the bottom left corner.
 
@@ -19,9 +20,9 @@ I decided to use an Orthogonal Matrix where the coordinates are from 0 to 1 with
 
 
 \clearpage
-# Task 2 {-}
+# Task 2
 
-## (a) {-}
+## (a)
 
 **What is the primary cause for interpolation to be non-linear, and why would a rendered image with linear interpolation of texture coordinates look incorrect?**
 
@@ -36,7 +37,7 @@ An image rendered using linear interpolation would not look correct because the 
 Comparison of rendering with linear or with non-linear interpolation.
 :::
 
-## (b) {-}
+## (b)
 
 
 **Why would a displacement map be an inappropriate thing to use if we wanted more detailed features in the walls of the scene in this assignment?**
@@ -50,7 +51,7 @@ Displacement Maps take the original mesh (or vertices) and, surprise surprise, d
 
 To reap the benefits of a displacement map we would have to increase the number of vertices in the mesh for the walls. In other words split our two triangles into a lot more triangles. Not only does this sound like a real pain to do manually, but greatly increasing the vertex count of everything would also start to affect performance. This is why games (where high framerates are desired) usually use normal maps instead of displacement maps for smaller or ''flat'' objects.
 
-## (c) {-}
+## (c)
 
 **Consider a texture which is cut in half vertically, whose left side is completely red, and the right side green. The red side of the texture is now mapped on to two triangles forming a rectangle. Close to the camera, this red rectangle renders exactly as you’d expect it to. However, when moved far away instead, a downside of mipmaps becomes visible. What visual artefact would you expect to see, and why does that happen?**
 
@@ -58,30 +59,30 @@ The mipmapping will cause the colors of the two ractangles to start blending, fo
 
 
 \clearpage
-# Task 3 {-}
+# Task 3
 
-## (f) {-}
+## (f)
 
 ![Diffuse Texture + Normal Map](images/3f-back-wall.png)
 
 ![''Spotlight'' effect on the right wall](images/3f-spotlight.png)
 
-## (i) {-}
+## (i)
 
 ![Normals before creating and using the TBN matrix](images/3i-without-TBN.png)
 
 ![Normals after creating and using the TBN matrix](images/3i-with-TBN.png)
 
-## (j) {-}
+## (j)
 
 ![After using TBN matrix. ''Spotlight'' effect on the right wall is gone](images/3j-right.png)
 
 ![Final Product](images/finished.png)
 
 
-# Task 4 {-}
+# Task 4
 
-## Rough around the edges. {-}
+## Rough around the edges.
 
 ![Visualization of the roughness loaded from the texture and its impact on the reflected light](images/opt-roughness-map.png)
 
